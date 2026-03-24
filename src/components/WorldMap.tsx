@@ -77,37 +77,33 @@ const WorldMap: React.FC<WorldMapProps> = ({
             translateExtent={[[-Infinity, -150], [Infinity, 500]]}
           >
             <Graticule stroke="#E4E5E6" strokeWidth={0.5} />
-            {[-1, 0, 1].map((offset) => (
-              <g key={offset} transform={`translate(${offset * worldWidth}, 0)`}>
-                <Geographies geography={geoUrl}>
-                  {({ geographies }: { geographies: any[] }) =>
-                    geographies.map((geo: any) => {
-                      const countryId = geo.id ? String(geo.id).padStart(3, "0") : null;
-                      if (!countryId) return null;
-                      const isVisited = visitedCountries.has(countryId);
-                      const years = visitedData[countryId];
-                      const year = years && years.length > 0 ? years[0] : null;
-                      let fillColor = isVisited ? visitedColor : "#D6D6DA";
-                      if (isVisited && viewMode === "yearly" && year) fillColor = getYearlyColor(year);
-                      return (
-                        <Geography
-                          key={`${offset}-${geo.rsmKey}`}
-                          geography={geo}
-                          onClick={() => onCountryClick(countryId)}
-                          onMouseEnter={() => setTooltipContent(`${geo.properties.name}${year ? ` (${year})` : ""}`)}
-                          onMouseLeave={() => setTooltipContent("")}
-                          style={{
-                            default: { fill: fillColor, stroke: "#FFFFFF", strokeWidth: 0.5, outline: "none" },
-                            hover: { fill: isVisited ? fillColor : "#F53", fillOpacity: 0.8, stroke: "#FFFFFF", strokeWidth: 0.5, outline: "none", cursor: "pointer" },
-                            pressed: { fill: "#E42", outline: "none" }
-                          }}
-                        />
-                      );
-                    })
-                  }
-                </Geographies>
-              </g>
-            ))}
+            <Geographies geography={geoUrl}>
+              {({ geographies }: { geographies: any[] }) =>
+                geographies.map((geo: any) => {
+                  const countryId = geo.id ? String(geo.id).padStart(3, "0") : null;
+                  if (!countryId) return null;
+                  const isVisited = visitedCountries.has(countryId);
+                  const years = visitedData[countryId];
+                  const year = years && years.length > 0 ? years[0] : null;
+                  let fillColor = isVisited ? visitedColor : "#D6D6DA";
+                  if (isVisited && viewMode === "yearly" && year) fillColor = getYearlyColor(year);
+                  return (
+                    <Geography
+                      key={geo.rsmKey}
+                      geography={geo}
+                      onClick={() => onCountryClick(countryId)}
+                      onMouseEnter={() => setTooltipContent(`${geo.properties.name}${year ? ` (${year})` : ""}`)}
+                      onMouseLeave={() => setTooltipContent("")}
+                      style={{
+                        default: { fill: fillColor, stroke: "#FFFFFF", strokeWidth: 0.5, outline: "none" },
+                        hover: { fill: isVisited ? fillColor : "#F53", fillOpacity: 0.8, stroke: "#FFFFFF", strokeWidth: 0.5, outline: "none", cursor: "pointer" },
+                        pressed: { fill: "#E42", outline: "none" }
+                      }}
+                    />
+                  );
+                })
+              }
+            </Geographies>
           </ZoomableGroup>
         </ComposableMap>
         {tooltipContent && (

@@ -213,31 +213,73 @@ body {
 .year-preview { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); }
 
 /* --- Timeline --- */
-.timeline-year-block { display: flex; margin-bottom: 48px; gap: 40px; }
+.timeline-year-block { display: flex; margin-bottom: 56px; gap: 48px; }
 .timeline-year-label-group {
-  flex: 0 0 100px; display: flex; flex-direction: column; align-items: center; gap: 16px;
+  flex: 0 0 120px; display: flex; flex-direction: column; align-items: center; gap: 16px;
   position: sticky; top: 100px;
 }
-.timeline-year-label { font-size: 2.25rem; font-weight: 900; color: var(--secondary); letter-spacing: -0.04em; }
+.timeline-year-label { font-size: 2.5rem; font-weight: 900; color: var(--secondary); letter-spacing: -0.04em; }
+.year-stats-badge { font-size: 0.75rem; font-weight: 800; color: var(--text-muted); background: rgba(0,0,0,0.04); padding: 4px 12px; border-radius: 100px; }
 .year-color-picker-wrapper { width: 32px; height: 32px; border-radius: 50%; border: 3px solid white; box-shadow: var(--shadow-sm); overflow: hidden; }
 .year-color-picker { width: 200%; height: 200%; margin: -50%; border: none; cursor: pointer; }
 
-.timeline-countries { flex: 1; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+.timeline-countries { 
+  flex: 1; 
+  display: flex; 
+  flex-wrap: wrap; 
+  gap: 12px; 
+  align-content: flex-start;
+}
 
-/* --- Timeline Mini Card (Mobile) --- */
+/* --- Timeline Country Chip (PC) --- */
 .timeline-country-card-mini {
-  background: white; border: 1px solid var(--border); border-radius: 10px; padding: 6px 10px;
-  display: flex; justify-content: space-between; align-items: center;
-  box-shadow: var(--shadow-sm); cursor: grab;
+  background: white; 
+  border: 1px solid var(--border); 
+  border-radius: 100px; 
+  padding: 8px 16px;
+  display: flex; 
+  align-items: center;
+  gap: 10px;
+  box-shadow: var(--shadow-sm); 
+  cursor: grab;
   touch-action: none;
+  transition: all 0.2s;
 }
-.card-content-mini { display: flex; align-items: center; gap: 6px; overflow: hidden; }
-.country-flag-mini { width: 18px; height: auto; border-radius: 2px; }
+
+.timeline-country-card-mini:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  border-color: var(--primary);
+}
+
+.timeline-country-card-mini.dragging {
+  opacity: 0.5;
+  cursor: grabbing;
+}
+
+.card-content-mini { display: flex; align-items: center; gap: 10px; }
+.country-flag-mini { width: 24px; height: auto; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
 .country-name-mini { 
-  font-size: 0.7rem; font-weight: 700; color: var(--secondary); 
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  font-size: 0.9rem; 
+  font-weight: 700; 
+  color: var(--secondary); 
+  white-space: nowrap;
 }
-.btn-remove-card-mini { background: transparent; color: #ccc; border: none; font-size: 0.7rem; cursor: pointer; }
+.btn-remove-card-mini { 
+  background: rgba(0,0,0,0.04); 
+  color: #999; 
+  border: none; 
+  width: 20px; 
+  height: 20px; 
+  border-radius: 50%; 
+  font-size: 0.6rem; 
+  cursor: pointer; 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+.btn-remove-card-mini:hover { background: var(--accent); color: white; }
 
 /* --- Data View --- */
 .stats-view-container { display: flex; flex-direction: column; gap: 32px; animation: fadeIn 0.4s ease; }

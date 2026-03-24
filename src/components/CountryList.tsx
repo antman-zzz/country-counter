@@ -63,7 +63,7 @@ const CountryList: FC<CountryListProps> = ({
   const [editingCountry, setEditingCountry] = useState<Country | null>(null);
 
   const currentYear = new Date().getFullYear();
-  const yearsOptions = useMemo(() => Array.from({ length: currentYear - 1950 + 1 }, (_, i) => String(currentYear - i)), [currentYear]);
+  const yearsOptions = useMemo(() => Array.from({ length: 2050 - 1950 + 1 }, (_, i) => String(2050 - i)), []);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
