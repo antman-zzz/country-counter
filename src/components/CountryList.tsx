@@ -8,7 +8,6 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
-  DragOverlay,
 } from "@dnd-kit/core";
 import type { DragStartEvent, DragOverEvent, DragEndEvent } from "@dnd-kit/core";
 import {
@@ -61,7 +60,6 @@ const CountryList: FC<CountryListProps> = ({
 }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [listMode, setListMode] = useState<"region" | "year" | "data">("region");
-  const [activeId, setActiveId] = useState<string | null>(null);
   const [editingCountry, setEditingCountry] = useState<Country | null>(null);
 
   const currentYear = new Date().getFullYear();
@@ -124,7 +122,7 @@ const CountryList: FC<CountryListProps> = ({
     return { regionalData: regionEntries, totalCountries: uniqueVisited.length, totalVisits, mostVisitedYear, yearlyCounts };
   }, [visitedData, countries]);
 
-  const handleDragStart = (event: DragStartEvent) => setActiveId(event.active.id as string);
+  const handleDragStart = (_event: DragStartEvent) => {};
   const handleDragOver = (event: DragOverEvent) => {
     const { active, over } = event;
     if (!over) return;
@@ -147,7 +145,6 @@ const CountryList: FC<CountryListProps> = ({
       const newIndex = visitedOrder.indexOf(over.id as string);
       if (oldIndex !== -1 && newIndex !== -1) onReorder(arrayMove(visitedOrder, oldIndex, newIndex));
     }
-    setActiveId(null);
   };
 
   const defaultYearlyColors = ["#e74c3c", "#3498db", "#9b59b6", "#f1c40f", "#1abc9c", "#e67e22", "#34495e", "#d35400", "#27ae60", "#ff69b4"];

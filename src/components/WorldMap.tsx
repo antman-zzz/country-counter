@@ -13,7 +13,7 @@ interface WorldMapProps {
   visitedCountries: Set<string>;
   onCountryClick: (countryCode: string) => void;
   visitedColor: string;
-  visitedData: Record<string, string>;
+  visitedData: Record<string, string[]>;
   viewMode: "simple" | "yearly";
   onColorChange: (color: string) => void;
   onModeChange: (mode: "simple" | "yearly") => void;
@@ -82,7 +82,8 @@ const WorldMap: React.FC<WorldMapProps> = ({
                       const countryId = geo.id ? String(geo.id).padStart(3, "0") : null;
                       if (!countryId) return null;
                       const isVisited = visitedCountries.has(countryId);
-                      const year = visitedData[countryId];
+                      const years = visitedData[countryId];
+                      const year = years && years.length > 0 ? years[0] : null;
                       let fillColor = isVisited ? visitedColor : "#D6D6DA";
                       if (isVisited && viewMode === "yearly" && year) fillColor = getYearlyColor(year);
                       return (
