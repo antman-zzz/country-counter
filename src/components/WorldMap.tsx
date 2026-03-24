@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from "react";
+// @ts-ignore
 import {
   ComposableMap,
   Geographies,
