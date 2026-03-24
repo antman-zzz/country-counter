@@ -43,7 +43,6 @@ const WorldMap: React.FC<WorldMapProps> = ({
   };
 
   const scale = 100;
-  const worldWidth = scale * 2 * Math.PI;
 
   // Zoom level adjusted (one level out)
   const initialZoom = isMobile ? 2.0 : 1.0;
