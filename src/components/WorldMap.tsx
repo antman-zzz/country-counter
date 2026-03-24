@@ -1,14 +1,14 @@
 import React, { useState, useMemo, useEffect } from "react";
 // @ts-ignore
-import {
+import * as RSM from "../vendor/react-simple-maps.js";
+
+const {
   ComposableMap,
   Geographies,
   Geography,
   Graticule,
   ZoomableGroup
-} from "../vendor/react-simple-maps.js";
-
-import type { FC } from "react";
+} = RSM as any;
 
 const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
