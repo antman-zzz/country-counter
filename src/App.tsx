@@ -1,0 +1,287 @@
+import { useState, useEffect, useMemo } from "react";
+import "./App.css";
+import { countries } from "./data/countries";
+import WorldMap from "./components/WorldMap";
+import CountryList from "./components/CountryList";
+import ProgressBar from "./components/ProgressBar";
+import { QRCodeSVG } from "qrcode.react";
+
+type VisitedData = Record<string, string[]>; // Changed to string[] for multiple visits
+type YearlyColors = Record<string, string>;
+type MapRegion = "asia" | "europe" | "americas" | null;
+
+function App() {
+  const currentYearString = String(new Date().getFullYear());
+
+  const [visitedData, setVisitedData] = useState<VisitedData>(() => {
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const v = urlParams.get("v");
+      
+      if (v) {
+        const decoded: VisitedData = {};
+        // Decode from Base64 binary format
+        const binaryString = atob(v.replace(/-/g, "+").replace(/_/g, "/"));
+        const bytes = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) bytes[i] = binaryString.charCodeAt(i);
+
+        let ptr = 0;
+        while (ptr < bytes.length) {
+          const countryIdx = bytes[ptr++];
+          const visitCount = bytes[ptr++];
+          const country = countries[countryIdx];
+          if (country) {
+            const years: string[] = [];
+            for (let j = 0; j < visitCount; j++) {
+              const yy = bytes[ptr++];
+              years.push(yy > 50 ? `19${yy}` : `20${yy}`);
+            }
+            decoded[country.numeric] = years;
+          }
+        }
+        return decoded;
+      }
+
+      const saved = localStorage.getItem("visitedData");
+      if (!saved) return {};
+      const parsed = JSON.parse(saved);
+      const migrated: VisitedData = {};
+      Object.entries(parsed).forEach(([id, value]) => {
+        if (Array.isArray(value)) migrated[id] = value;
+        else if (typeof value === "string") migrated[id] = [value];
+      });
+      return migrated;
+    } catch (e) {
+      return {};
+    }
+  });
+
+  const [visitedOrder, setVisitedOrder] = useState<string[]>(() => {
+    const saved = localStorage.getItem("visitedOrder");
+    if (saved) return JSON.parse(saved);
+    return Object.keys(visitedData);
+  });
+
+  const [mapRegion, setMapRegion] = useState<MapRegion>(() => {
+    return (localStorage.getItem("mapRegion") as MapRegion) || null;
+  });
+
+  const [visitedColor, setVisitedColor] = useState<string>(() => {
+    return localStorage.getItem("visitedColor") || "#3498db";
+  });
+
+  const [yearlyColors, setYearlyColors] = useState<YearlyColors>(() => {
+    const saved = localStorage.getItem("yearlyColors");
+    return saved ? JSON.parse(saved) : {};
+  });
+  
+  const [viewMode, setViewMode] = useState<"simple" | "yearly">("simple");
+  const [showQR, setShowQR] = useState(false);
+  const [copyCount, setCopyCount] = useState<number>(() => {
+    return parseInt(localStorage.getItem("copyCount") || "0");
+  });
+  const [copyFeedback, setCopyFeedback] = useState(false);
+
+  useEffect(() => {
+    localStorage.setItem("visitedData", JSON.stringify(visitedData));
+    const currentOrder = visitedOrder.filter(id => !!visitedData[id]);
+    const missingIds = Object.keys(visitedData).filter(id => !visitedOrder.includes(id));
+    const newOrder = [...currentOrder, ...missingIds];
+    localStorage.setItem("visitedOrder", JSON.stringify(newOrder));
+  }, [visitedData, visitedOrder]);
+
+  useEffect(() => {
+    localStorage.setItem("visitedColor", visitedColor);
+  }, [visitedColor]);
+
+  useEffect(() => {
+    localStorage.setItem("yearlyColors", JSON.stringify(yearlyColors));
+  }, [yearlyColors]);
+
+  useEffect(() => {
+    if (mapRegion) localStorage.setItem("mapRegion", mapRegion);
+  }, [mapRegion]);
+
+  useEffect(() => {
+    localStorage.setItem("copyCount", copyCount.toString());
+  }, [copyCount]);
+
+  const handleToggleCountry = (id: string) => {
+    setVisitedData((prev) => {
+      const next = { ...prev };
+      if (next[id]) {
+        delete next[id];
+        setVisitedOrder(order => order.filter(oid => oid !== id));
+      } else {
+        next[id] = [currentYearString];
+        setVisitedOrder(order => [id, ...order]);
+      }
+      return { ...next };
+    });
+  };
+
+  const handleUpdateYears = (id: string, years: string[]) => {
+    setVisitedData((prev) => ({ ...prev, [id]: years }));
+  };
+
+  const handleUpdateYearlyColor = (year: string, color: string) => {
+    setYearlyColors(prev => ({ ...prev, [year]: color }));
+  };
+
+  const handleReorder = (newOrder: string[]) => {
+    setVisitedOrder(newOrder);
+  };
+
+  const handleListToggle = (alpha3: string) => {
+    const country = countries.find(c => c.code === alpha3);
+    if (country) handleToggleCountry(country.numeric);
+  };
+
+  const visitedAlpha3Codes = useMemo(() => {
+    const set = new Set<string>();
+    Object.keys(visitedData).forEach(id => {
+      const country = countries.find(c => c.numeric === id);
+      if (country) set.add(country.code);
+    });
+    return set;
+  }, [visitedData]);
+
+  // Stats for Progress Bar (Yearly Breakdown)
+  const visitedStats = useMemo(() => {
+    const stats: Record<string, number> = {};
+    Object.values(visitedData).forEach(years => {
+      years.forEach(year => {
+        stats[year] = (stats[year] || 0) + 1;
+      });
+    });
+    return stats;
+  }, [visitedData]);
+
+  const shareUrl = useMemo(() => {
+    const bytes: number[] = [];
+    Object.entries(visitedData).forEach(([id, years]) => {
+      const idx = countries.findIndex(c => c.numeric === id);
+      if (idx !== -1) {
+        bytes.push(idx);
+        bytes.push(years.length);
+        years.forEach(y => bytes.push(parseInt(y.slice(-2))));
+      }
+    });
+    const binary = String.fromCharCode(...bytes);
+    const base64 = btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+    return `${window.location.origin}${window.location.pathname}?v=${base64}`;
+  }, [visitedData]);
+
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(shareUrl).then(() => {
+      setCopyCount(prev => prev + 1);
+      setCopyFeedback(true);
+      setTimeout(() => setCopyFeedback(false), 2000);
+    });
+  };
+
+  const visitedCount = Object.keys(visitedData).length;
+  const totalCount = countries.length;
+
+  return (
+    <div className="app-container">
+      {!mapRegion && (
+        <div className="onboarding-overlay">
+          <div className="onboarding-modal">
+            <div className="onboarding-header">
+              <h2>Welcome to Country Counter</h2>
+              <p>Explore the world and track your footprints.</p>
+            </div>
+            <div className="region-choices">
+              <button className="btn-region" onClick={() => setMapRegion("asia")}><span className="region-icon">🌏</span><span className="region-name">Asia & Oceania</span></button>
+              <button className="btn-region" onClick={() => setMapRegion("europe")}><span className="region-icon">🌍</span><span className="region-name">Europe & Africa</span></button>
+              <button className="btn-region" onClick={() => setMapRegion("americas")}><span className="region-icon">🌎</span><span className="region-name">The Americas</span></button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showQR && (
+        <div className="modal-overlay" onClick={() => setShowQR(false)}>
+          <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+            <button className="modal-close-btn" onClick={() => setShowQR(false)}>✕</button>
+            <h3>Share Your Journey</h3>
+            <p className="modal-subtitle">Sync with other devices or use for model changes.</p>
+            <div className="qr-wrapper"><QRCodeSVG value={shareUrl} size={180} /></div>
+            <div className="share-actions">
+              <button className={`btn-primary btn-copy-link ${copyFeedback ? 'copied' : ''}`} onClick={handleCopyLink}>
+                {copyFeedback ? "✓ Link Copied" : "Copy Share Link"}
+              </button>
+              <div className="share-meta">Shared <span className="highlight">{copyCount}</span> times</div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <header className="app-navbar">
+        <div className="nav-content">
+          <div className="nav-left"><h1 className="nav-title">CountryCounter</h1></div>
+          <div className="nav-center">
+            <ProgressBar 
+              visitedCount={visitedCount} 
+              totalCount={totalCount} 
+              color={visitedColor} 
+              isYearly={viewMode === "yearly"}
+              stats={visitedStats}
+              yearlyColors={yearlyColors}
+            />
+          </div>
+          <div className="nav-right">
+            <button className="btn-glass" onClick={() => setShowQR(true)}><span>Share Journey</span></button>
+          </div>
+        </div>
+      </header>
+
+      <main className="main-content">
+        <section className="section-map">
+          <WorldMap 
+            visitedCountries={new Set(Object.keys(visitedData))} 
+            onCountryClick={handleToggleCountry} 
+            visitedColor={visitedColor}
+            visitedData={visitedData}
+            viewMode={viewMode}
+            onColorChange={(color) => setVisitedColor(color)}
+            onModeChange={(mode) => setViewMode(mode)}
+            yearlyColors={yearlyColors}
+            mapRegion={mapRegion}
+            onRegionChange={(reg) => setMapRegion(reg)}
+          />
+        </section>
+
+        <section className="section-list">
+          <CountryList 
+            countries={countries} 
+            visitedCountries={visitedAlpha3Codes} 
+            visitedData={visitedData} 
+            visitedOrder={visitedOrder} 
+            onToggle={handleListToggle} 
+            onYearsChange={handleUpdateYears} 
+            onReorder={handleReorder} 
+            yearlyColors={yearlyColors} 
+            onYearlyColorChange={handleUpdateYearlyColor} 
+          />
+        </section>
+      </main>
+
+      <div className="mobile-progress-floating">
+        <ProgressBar 
+          visitedCount={visitedCount} 
+          totalCount={totalCount} 
+          color={visitedColor} 
+          isYearly={viewMode === "yearly"}
+          stats={visitedStats}
+          yearlyColors={yearlyColors}
+        />
+      </div>
+
+      <footer className="app-footer"><p>© 2026 Country Counter • Crafted for travelers</p></footer>
+    </div>
+  );
+}
+
+export default App;
