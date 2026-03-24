@@ -7,6 +7,8 @@ import {
   ZoomableGroup
 } from "../vendor/react-simple-maps.js";
 
+import type { FC } from "react";
+
 const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
 interface WorldMapProps {
