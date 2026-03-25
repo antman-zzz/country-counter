@@ -53,7 +53,7 @@ const WorldMap: React.FC<WorldMapProps> = ({
       case "asia": return { center: [100, 20] as [number, number], zoom: mobile ? 2.5 : 2.0 };
       case "europe": return { center: [15, 30] as [number, number], zoom: mobile ? 2.8 : 2.2 };
       case "americas": return { center: [-90, 20] as [number, number], zoom: mobile ? 2.2 : 1.8 };
-      default: return { center: [0, 20] as [number, number], zoom: mobile ? 1.0 : 0.8 };
+      default: return { center: [0, 10] as [number, number], zoom: mobile ? 0.8 : 0.6 };
     }
   };
 
@@ -68,7 +68,7 @@ const WorldMap: React.FC<WorldMapProps> = ({
         <ComposableMap 
           projection="geoMercator" 
           projectionConfig={{ scale: scale }} 
-          height={isMobile ? 500 : 450} 
+          height={isMobile ? 400 : 350} 
           style={{ width: "100%", height: "auto" }}
         >
           <ZoomableGroup 
@@ -76,8 +76,8 @@ const WorldMap: React.FC<WorldMapProps> = ({
             center={center} 
             zoom={zoom}
             maxZoom={12} 
-            minZoom={1} 
-            translateExtent={[[-Infinity, -100], [Infinity, 450]]}
+            minZoom={0.4} 
+            translateExtent={[[-Infinity, -150], [Infinity, 450]]}
           >
             <Graticule stroke="#E4E5E6" strokeWidth={0.5} />
             {[-1, 0, 1].map((offset) => (
