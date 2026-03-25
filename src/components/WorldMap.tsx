@@ -23,13 +23,11 @@ interface WorldMapProps {
   onColorChange: (color: string) => void;
   onModeChange: (mode: "simple" | "yearly") => void;
   yearlyColors: Record<string, string>;
-  mapRegion: "asia" | "europe" | "americas" | null;
-  onRegionChange: (region: "asia" | "europe" | "americas") => void;
   homeCountry: string | null;
 }
 
 const WorldMap: React.FC<WorldMapProps> = ({ 
-  visitedCountries, onCountryClick, visitedColor, visitedData, viewMode, onColorChange, onModeChange, yearlyColors, mapRegion, onRegionChange, homeCountry
+  visitedCountries, onCountryClick, visitedColor, visitedData, viewMode, onColorChange, onModeChange, yearlyColors, homeCountry
 }) => {
   const [tooltipContent, setTooltipContent] = useState("");
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
@@ -48,16 +46,11 @@ const WorldMap: React.FC<WorldMapProps> = ({
   const scale = 100;
   const worldWidth = scale * 2 * Math.PI;
 
-  const getRegionConfig = (region: MapRegion, mobile: boolean) => {
-    switch (region) {
-      case "asia": return { center: [100, 20] as [number, number], zoom: mobile ? 2.0 : 1.6 };
-      case "europe": return { center: [15, 30] as [number, number], zoom: mobile ? 2.2 : 1.8 };
-      case "americas": return { center: [-90, 20] as [number, number], zoom: mobile ? 1.8 : 1.5 };
-      default: return { center: [0, 10] as [number, number], zoom: mobile ? 0.7 : 0.5 };
-    }
+  const getRegionConfig = (mobile: boolean) => {
+    return { center: [0, 10] as [number, number], zoom: mobile ? 0.7 : 0.5 };
   };
 
-  const { center, zoom } = useMemo(() => getRegionConfig(mapRegion, isMobile), [mapRegion, isMobile]);
+  const { center, zoom } = useMemo(() => getRegionConfig(isMobile), [isMobile]);
 
   const defaultYearlyColors = ["#e74c3c", "#3498db", "#9b59b6", "#f1c40f", "#1abc9c", "#e67e22", "#34495e", "#d35400", "#27ae60", "#ff69b4"];
   const getYearlyColor = (year: string) => yearlyColors[year] || defaultYearlyColors[parseInt(year) % 10];
@@ -72,7 +65,7 @@ const WorldMap: React.FC<WorldMapProps> = ({
           style={{ width: "100%", height: "auto" }}
         >
           <ZoomableGroup 
-            key={`${mapRegion}-${isMobile}`} 
+            key={isMobile ? "mobile" : "desktop"} 
             center={center} 
             zoom={zoom}
             maxZoom={12} 
@@ -135,27 +128,6 @@ const WorldMap: React.FC<WorldMapProps> = ({
 
       <div className="map-controls-compact">
         <div className="compact-control-group">
-          <div className="compact-item center-select">
-            <span className="compact-label">Map:</span>
-            {isMobile ? (
-              <select 
-                className="mobile-select-mini" 
-                value={mapRegion || ""} 
-                onChange={(e) => onRegionChange(e.target.value as any)}
-              >
-                <option value="asia">Asia</option>
-                <option value="europe">EU/AF</option>
-                <option value="americas">Americas</option>
-              </select>
-            ) : (
-              <div className="segmented-control-mini">
-                <button className={`btn-slim ${mapRegion === 'asia' ? 'active' : ''}`} onClick={() => onRegionChange("asia")}>Asia</button>
-                <button className={`btn-slim ${mapRegion === 'europe' ? 'active' : ''}`} onClick={() => onRegionChange("europe")}>EU/ME</button>
-                <button className={`btn-slim ${mapRegion === 'americas' ? 'active' : ''}`} onClick={() => onRegionChange("americas")}>Americas</button>
-              </div>
-            )}
-          </div>
-
           <div className="compact-item mode-toggle">
             <span className="compact-label">Mode:</span>
             <div className="segmented-control-mini">

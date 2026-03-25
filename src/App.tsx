@@ -274,8 +274,6 @@ function App() {
             onColorChange={(color) => setVisitedColor(color)}
             onModeChange={(mode) => setViewMode(mode)}
             yearlyColors={yearlyColors}
-            mapRegion={mapRegion}
-            onRegionChange={(reg) => setMapRegion(reg)}
             homeCountry={homeCountry}
           />
         </section>
