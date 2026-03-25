@@ -308,7 +308,13 @@ const CountryList: FC<CountryListProps> = ({
                           {isVisited && (
                             <div className="selection-card-footer">
                               <div className="visit-badge">{years.length} {years.length === 1 ? 'visit' : 'visits'}</div>
-                              <div className="year-preview">{years[0]}{years.length > 1 ? '...' : ''}</div>
+                              <div className="year-preview">
+                                {(() => {
+                                  const sorted = [...years].sort((a, b) => a.localeCompare(b));
+                                  if (sorted.length <= 3) return sorted.join(", ");
+                                  return `${sorted[0]}, ..., ${sorted[sorted.length - 1]}`;
+                                })()}
+                              </div>
                             </div>
                           )}
                         </div>

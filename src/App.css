@@ -527,9 +527,35 @@ body {
   }
   .btn-list-mode { flex: 1 !important; justify-content: center; padding: 10px 4px !important; font-size: 0.7rem !important; white-space: nowrap !important; min-width: 0; }
 
-  .timeline-countries { display: grid !important; grid-template-columns: repeat(3, 1fr) !important; gap: 8px !important; width: 100%; }
-  .timeline-country-card-mini { padding: 6px 4px !important; }
-  .country-name-mini { font-size: 0.6rem !important; }
+  /* --- Timeline Mobile Fix --- */
+  .timeline-year-block { 
+    flex-direction: column !important; 
+    gap: 16px !important; 
+    margin-bottom: 40px !important; 
+  }
+  .timeline-year-label-group {
+    flex: none !important;
+    width: 100% !important;
+    flex-direction: row !important;
+    justify-content: flex-start !important;
+    align-items: center !important;
+    gap: 12px !important;
+    position: static !important;
+    padding: 0 4px;
+  }
+  .timeline-year-label { font-size: 1.5rem !important; margin: 0 !important; }
+  .year-stats-badge { padding: 4px 8px !important; font-size: 0.65rem !important; }
+  .year-color-picker-wrapper { width: 24px !important; height: 24px !important; }
+
+  .timeline-countries { 
+    display: grid !important; 
+    grid-template-columns: repeat(2, 1fr) !important; 
+    gap: 8px !important; 
+    width: 100% !important; 
+  }
+  .timeline-country-card-mini { padding: 6px 8px !important; border-radius: 8px !important; }
+  .country-name-mini { font-size: 0.75rem !important; }
+  .country-flag-mini { width: 18px !important; }
 
   .stats-top-row { grid-template-columns: 1fr; }
   .stats-middle-row { grid-template-columns: 1fr; }
