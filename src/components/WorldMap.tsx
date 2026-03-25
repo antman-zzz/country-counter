@@ -50,10 +50,10 @@ const WorldMap: React.FC<WorldMapProps> = ({
 
   const getRegionConfig = (region: MapRegion, mobile: boolean) => {
     switch (region) {
-      case "asia": return { center: [100, 20] as [number, number], zoom: mobile ? 2.5 : 2.0 };
-      case "europe": return { center: [15, 30] as [number, number], zoom: mobile ? 2.8 : 2.2 };
-      case "americas": return { center: [-90, 20] as [number, number], zoom: mobile ? 2.2 : 1.8 };
-      default: return { center: [0, 10] as [number, number], zoom: mobile ? 0.8 : 0.6 };
+      case "asia": return { center: [100, 20] as [number, number], zoom: mobile ? 2.0 : 1.6 };
+      case "europe": return { center: [15, 30] as [number, number], zoom: mobile ? 2.2 : 1.8 };
+      case "americas": return { center: [-90, 20] as [number, number], zoom: mobile ? 1.8 : 1.5 };
+      default: return { center: [0, 10] as [number, number], zoom: mobile ? 0.7 : 0.5 };
     }
   };
 
