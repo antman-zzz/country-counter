@@ -101,9 +101,14 @@ const CountryList: FC<CountryListProps> = ({
   // Statistics calculations
   const stats = useMemo(() => {
     const regionalData: Record<string, number> = {};
+    const regionalTotal: Record<string, number> = {};
     const yearlyCounts: Record<string, number> = {};
     let totalVisits = 0;
     const uniqueVisited = Object.keys(visitedData);
+
+    countries.forEach(c => {
+      regionalTotal[c.region] = (regionalTotal[c.region] || 0) + 1;
+    });
 
     uniqueVisited.forEach(id => {
       const country = getCountryByNumeric(id);
@@ -120,7 +125,7 @@ const CountryList: FC<CountryListProps> = ({
     const mostVisitedYear = Object.entries(yearlyCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || "N/A";
     const regionEntries = Object.entries(regionalData).sort((a, b) => b[1] - a[1]);
     
-    return { regionalData: regionEntries, totalCountries: uniqueVisited.length, totalVisits, mostVisitedYear, yearlyCounts };
+    return { regionalData: regionEntries, regionalTotal, totalCountries: uniqueVisited.length, totalVisits, mostVisitedYear, yearlyCounts };
   }, [visitedData, countries]);
 
   const handleDragStart = (_event: DragStartEvent) => {};
@@ -385,12 +390,13 @@ const CountryList: FC<CountryListProps> = ({
                   {renderPieChart()}
                   <div className="pie-legend">
                     {stats.regionalData.map(([region, count], i) => {
+                      const totalInRegion = stats.regionalTotal[region] || 0;
                       const colors = ["#3498db", "#e74c3c", "#2ecc71", "#f1c40f", "#9b59b6", "#e67e22"];
                       return (
                         <div key={region} className="legend-item">
                           <span className="legend-color" style={{ backgroundColor: colors[i % colors.length] }} />
                           <span className="legend-label">{region}</span>
-                          <span className="legend-value">{count}</span>
+                          <span className="legend-value">{count}/{totalInRegion}</span>
                         </div>
                       );
                     })}
