@@ -168,6 +168,12 @@ const CountryList: FC<CountryListProps> = ({
     onYearsChange(numericId, currentYears);
   };
 
+  const handleRemoveSpecificYear = (numericId: string, yearToRemove: string) => {
+    const currentYears = visitedData[numericId] || [];
+    const index = currentYears.indexOf(yearToRemove);
+    if (index !== -1) handleRemoveYear(numericId, index);
+  };
+
   // Pie Chart Helper
   const renderPieChart = () => {
     const total = stats.totalCountries;
@@ -328,7 +334,7 @@ const CountryList: FC<CountryListProps> = ({
                   <div className="timeline-countries">
                     <SortableContext items={countriesByYear[year]?.map(c => c.numeric) || []} strategy={rectSortingStrategy}>
                       {countriesByYear[year]?.filter(c => c.name.toLowerCase().includes(searchTerm.toLowerCase())).map(country => (
-                        <SortableCountryCard key={`${year}-${country.code}`} country={country} code2={country.code2} onRemove={() => onToggle(country.code)} />
+                        <SortableCountryCard key={`${year}-${country.code}`} country={country} code2={country.code2} onRemove={() => handleRemoveSpecificYear(country.numeric, year)} />
                       ))}
                     </SortableContext>
                   </div>
