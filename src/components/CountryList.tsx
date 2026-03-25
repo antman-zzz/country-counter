@@ -435,6 +435,41 @@ const CountryList: FC<CountryListProps> = ({
                 <p className="chart-footer">Full timeline of your travel activity</p>
               </div>
             </div>
+
+            <div className="stats-unvisited-section">
+              <div className="unvisited-header-group">
+                <h3 className="unvisited-title">Where to Next?</h3>
+                <p className="unvisited-subtitle">Explore the countries you haven't visited yet, grouped by region.</p>
+              </div>
+              
+              <div className="unvisited-grid">
+                {Array.from(new Set(countries.map(c => c.region))).sort().map(region => {
+                  const unvisitedInRegion = countries.filter(c => c.region === region && !visitedCountries.has(c.code));
+                  if (unvisitedInRegion.length === 0) return null;
+                  
+                  return (
+                    <div key={region} className="unvisited-region-card">
+                      <div className="unvisited-region-header">
+                        <h4>{region}</h4>
+                        <span className="unvisited-count">{unvisitedInRegion.length} remaining</span>
+                      </div>
+                      <div className="unvisited-chips">
+                        {unvisitedInRegion.sort((a,b) => a.name.localeCompare(b.name)).map(country => (
+                          <div 
+                            key={country.code} 
+                            className={`unvisited-chip ${readOnly ? 'readonly' : ''}`} 
+                            onClick={() => !readOnly && onToggle(country.code)}
+                          >
+                            <img src={`https://flagcdn.com/w20/${country.code2.toLowerCase()}.png`} alt="" className="mini-flag" />
+                            <span>{country.name}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           </div>
         )}
       </div>
