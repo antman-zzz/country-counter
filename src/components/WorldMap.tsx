@@ -80,12 +80,12 @@ const WorldMap: React.FC<WorldMapProps> = ({
               {({ geographies }: { geographies: any[] }) =>
                 geographies.map((geo: any) => {
                   const countryId = geo.id ? String(geo.id).padStart(3, "0") : null;
-                  if (!countryId) return null;
-                  const isVisited = visitedCountries.has(countryId);
-                  const years = visitedData[countryId];
-                  const year = years && years.length > 0 ? years[0] : null;
-                  let fillColor = isVisited ? visitedColor : "#D6D6DA";
-                  if (isVisited && viewMode === "yearly" && year) fillColor = getYearlyColor(year);
+                      if (!countryId) return null;
+                      const isVisited = visitedCountries.has(countryId);
+                      const years = visitedData[countryId];
+                      // Find the earliest year visited
+                      const year = years && years.length > 0 ? [...years].sort((a, b) => a.localeCompare(b))[0] : null;
+                      let fillColor = isVisited ? visitedColor : "#D6D6DA";                  if (isVisited && viewMode === "yearly" && year) fillColor = getYearlyColor(year);
                   return (
                     <Geography
                       key={geo.rsmKey}
