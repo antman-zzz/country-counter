@@ -62,6 +62,10 @@ function App() {
     return Object.keys(visitedData);
   });
 
+  const [homeCountry, setHomeCountry] = useState<string | null>(() => {
+    return localStorage.getItem("homeCountry") || null;
+  });
+
   const [mapRegion, setMapRegion] = useState<MapRegion>(() => {
     return (localStorage.getItem("mapRegion") as MapRegion) || null;
   });
@@ -103,8 +107,22 @@ function App() {
   }, [mapRegion]);
 
   useEffect(() => {
+    if (homeCountry) localStorage.setItem("homeCountry", homeCountry);
+  }, [homeCountry]);
+
+  useEffect(() => {
     localStorage.setItem("copyCount", copyCount.toString());
   }, [copyCount]);
+
+  const handleSelectHome = (numericId: string) => {
+    const country = countries.find(c => c.numeric === numericId);
+    if (!country) return;
+    setHomeCountry(numericId);
+    // Auto-set region based on home country
+    if (country.region.includes("Asia") || country.region.includes("Oceania")) setMapRegion("asia");
+    else if (country.region.includes("Europe") || country.region.includes("Africa")) setMapRegion("europe");
+    else setMapRegion("americas");
+  };
 
   const handleToggleCountry = (id: string) => {
     setVisitedData((prev) => {
@@ -185,18 +203,26 @@ function App() {
 
   return (
     <div className="app-container">
-      {!mapRegion && (
+      {!homeCountry && (
         <div className="onboarding-overlay">
           <div className="onboarding-modal">
             <div className="onboarding-header">
               <h2>Welcome to Country Counter</h2>
-              <p>Explore the world and track your footprints.</p>
+              <p>Where are you from?</p>
             </div>
-            <div className="region-choices">
-              <button className="btn-region" onClick={() => setMapRegion("asia")}><span className="region-icon">🌏</span><span className="region-name">Asia & Oceania</span></button>
-              <button className="btn-region" onClick={() => setMapRegion("europe")}><span className="region-icon">🌍</span><span className="region-name">Europe & Africa</span></button>
-              <button className="btn-region" onClick={() => setMapRegion("americas")}><span className="region-icon">🌎</span><span className="region-name">The Americas</span></button>
+            <div className="home-country-picker">
+              <select 
+                className="onboarding-select" 
+                onChange={(e) => handleSelectHome(e.target.value)}
+                defaultValue=""
+              >
+                <option value="" disabled>Select your home country...</option>
+                {countries.sort((a,b) => a.name.localeCompare(b.name)).map(c => (
+                  <option key={c.numeric} value={c.numeric}>{c.name}</option>
+                ))}
+              </select>
             </div>
+            <p className="onboarding-footer-note">This will be your base on the map.</p>
           </div>
         </div>
       )}
@@ -250,6 +276,7 @@ function App() {
             yearlyColors={yearlyColors}
             mapRegion={mapRegion}
             onRegionChange={(reg) => setMapRegion(reg)}
+            homeCountry={homeCountry}
           />
         </section>
 
@@ -264,6 +291,7 @@ function App() {
             onReorder={handleReorder} 
             yearlyColors={yearlyColors} 
             onYearlyColorChange={handleUpdateYearlyColor} 
+            homeCountry={homeCountry}
           />
         </section>
       </main>

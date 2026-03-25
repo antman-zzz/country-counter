@@ -53,10 +53,11 @@ interface CountryListProps {
   onReorder: (newOrder: string[]) => void;
   yearlyColors: Record<string, string>;
   onYearlyColorChange: (year: string, color: string) => void;
+  homeCountry: string | null;
 }
 
 const CountryList: FC<CountryListProps> = ({ 
-  countries, visitedCountries, visitedData, visitedOrder, onToggle, onYearsChange, onReorder, yearlyColors, onYearlyColorChange
+  countries, visitedCountries, visitedData, visitedOrder, onToggle, onYearsChange, onReorder, yearlyColors, onYearlyColorChange, homeCountry
 }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [listMode, setListMode] = useState<"region" | "year" | "data">("region");
@@ -295,9 +296,10 @@ const CountryList: FC<CountryListProps> = ({
                 <div className="country-grid">
                   {countriesInRegion.map(country => {
                     const isVisited = visitedCountries.has(country.code);
+                    const isHome = country.numeric === homeCountry;
                     const years = visitedData[country.numeric] || [];
                     return (
-                      <div key={country.code} className={`country-selection-card ${isVisited ? 'visited' : ''}`} onClick={() => isVisited ? setEditingCountry(country) : onToggle(country.code)}>
+                      <div key={country.code} className={`country-selection-card ${isVisited ? 'visited' : ''} ${isHome ? 'is-home' : ''}`} onClick={() => isVisited ? setEditingCountry(country) : onToggle(country.code)}>
                         <div className="selection-card-content">
                           <div className="selection-card-header">
                             <img src={`https://flagcdn.com/w40/${country.code2.toLowerCase()}.png`} alt="" className="country-flag" />

@@ -23,10 +23,11 @@ interface WorldMapProps {
   yearlyColors: Record<string, string>;
   mapRegion: "asia" | "europe" | "americas" | null;
   onRegionChange: (region: "asia" | "europe" | "americas") => void;
+  homeCountry: string | null;
 }
 
 const WorldMap: React.FC<WorldMapProps> = ({ 
-  visitedCountries, onCountryClick, visitedColor, visitedData, viewMode, onColorChange, onModeChange, yearlyColors, mapRegion, onRegionChange
+  visitedCountries, onCountryClick, visitedColor, visitedData, viewMode, onColorChange, onModeChange, yearlyColors, mapRegion, onRegionChange, homeCountry
 }) => {
   const [tooltipContent, setTooltipContent] = useState("");
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
@@ -82,13 +83,17 @@ const WorldMap: React.FC<WorldMapProps> = ({
                   const countryId = geo.id ? String(geo.id).padStart(3, "0") : null;
                       if (!countryId) return null;
                       const isVisited = visitedCountries.has(countryId);
+                      const isHome = countryId === homeCountry;
                       const years = visitedData[countryId];
                       // Find the earliest year visited
                       const year = years && years.length > 0 ? [...years].sort((a, b) => a.localeCompare(b))[0] : null;
-                      let fillColor = isVisited ? visitedColor : "#D6D6DA";                  if (isVisited && viewMode === "yearly" && year) fillColor = getYearlyColor(year);
-                  return (
-                    <Geography
-                      key={geo.rsmKey}
+
+                      let fillColor = isVisited ? visitedColor : "#D6D6DA";
+                      if (isVisited && viewMode === "yearly" && year) fillColor = getYearlyColor(year);
+                      if (isHome) fillColor = "#f1c40f"; // Gold for home country
+
+                      return (
+                        <Geography                      key={geo.rsmKey}
                       geography={geo}
                       onClick={() => onCountryClick(countryId)}
                       onMouseEnter={() => setTooltipContent(`${geo.properties.name}${year ? ` (${year})` : ""}`)}
