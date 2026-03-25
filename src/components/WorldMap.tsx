@@ -44,17 +44,18 @@ const WorldMap: React.FC<WorldMapProps> = ({
   };
 
   const scale = 100;
+  const worldWidth = scale * 2 * Math.PI;
 
-  // Zoom level adjusted (one level out)
-  const initialZoom = isMobile ? 2.0 : 1.0;
-  const centerCoordinates: [number, number] = useMemo(() => {
-    switch (mapRegion) {
-      case "asia": return [100, 20];
-      case "europe": return [15, 45];
-      case "americas": return [-100, 30];
-      default: return [30, 8]; // South Sudan vicinity
+  const getRegionConfig = (region: MapRegion, mobile: boolean) => {
+    switch (region) {
+      case "asia": return { center: [100, 20] as [number, number], zoom: mobile ? 2.5 : 2.0 };
+      case "europe": return { center: [15, 30] as [number, number], zoom: mobile ? 2.8 : 2.2 };
+      case "americas": return { center: [-90, 20] as [number, number], zoom: mobile ? 2.2 : 1.8 };
+      default: return { center: [20, 10] as [number, number], zoom: mobile ? 1.8 : 1.2 };
     }
-  }, [mapRegion]);
+  };
+
+  const { center, zoom } = useMemo(() => getRegionConfig(mapRegion, isMobile), [mapRegion, isMobile]);
 
   const defaultYearlyColors = ["#e74c3c", "#3498db", "#9b59b6", "#f1c40f", "#1abc9c", "#e67e22", "#34495e", "#d35400", "#27ae60", "#ff69b4"];
   const getYearlyColor = (year: string) => yearlyColors[year] || defaultYearlyColors[parseInt(year) % 10];
@@ -65,22 +66,24 @@ const WorldMap: React.FC<WorldMapProps> = ({
         <ComposableMap 
           projection="geoMercator" 
           projectionConfig={{ scale: scale }} 
-          height={isMobile ? 550 : 420} 
+          height={isMobile ? 500 : 450} 
           style={{ width: "100%", height: "auto" }}
         >
           <ZoomableGroup 
             key={`${mapRegion}-${isMobile}`} 
-            center={centerCoordinates} 
-            zoom={initialZoom}
-            maxZoom={10} 
+            center={center} 
+            zoom={zoom}
+            maxZoom={12} 
             minZoom={1} 
-            translateExtent={[[-Infinity, -150], [Infinity, 500]]}
+            translateExtent={[[-Infinity, -100], [Infinity, 450]]}
           >
             <Graticule stroke="#E4E5E6" strokeWidth={0.5} />
-            <Geographies geography={geoUrl}>
-              {({ geographies }: { geographies: any[] }) =>
-                geographies.map((geo: any) => {
-                  const countryId = geo.id ? String(geo.id).padStart(3, "0") : null;
+            {[-1, 0, 1].map((offset) => (
+              <g key={offset} transform={`translate(${offset * worldWidth}, 0)`}>
+                <Geographies geography={geoUrl}>
+                  {({ geographies }: { geographies: any[] }) =>
+                    geographies.map((geo: any) => {
+                      const countryId = geo.id ? String(geo.id).padStart(3, "0") : null;
                       if (!countryId) return null;
                       const isVisited = visitedCountries.has(countryId);
                       const isHome = countryId === homeCountry;
@@ -93,21 +96,24 @@ const WorldMap: React.FC<WorldMapProps> = ({
                       if (isHome) fillColor = "#f1c40f"; // Gold for home country
 
                       return (
-                        <Geography                      key={geo.rsmKey}
-                      geography={geo}
-                      onClick={() => onCountryClick(countryId)}
-                      onMouseEnter={() => setTooltipContent(`${geo.properties.name}${year ? ` (${year})` : ""}`)}
-                      onMouseLeave={() => setTooltipContent("")}
-                      style={{
-                        default: { fill: fillColor, stroke: "#FFFFFF", strokeWidth: 0.5, outline: "none" },
-                        hover: { fill: isVisited ? fillColor : "#F53", fillOpacity: 0.8, stroke: "#FFFFFF", strokeWidth: 0.5, outline: "none", cursor: "pointer" },
-                        pressed: { fill: "#E42", outline: "none" }
-                      }}
-                    />
-                  );
-                })
-              }
-            </Geographies>
+                        <Geography
+                          key={`${offset}-${geo.rsmKey}`}
+                          geography={geo}
+                          onClick={() => onCountryClick(countryId)}
+                          onMouseEnter={() => setTooltipContent(`${geo.properties.name}${year ? ` (${year})` : ""}`)}
+                          onMouseLeave={() => setTooltipContent("")}
+                          style={{
+                            default: { fill: fillColor, stroke: "#FFFFFF", strokeWidth: 0.5, outline: "none" },
+                            hover: { fill: isVisited ? fillColor : "#F53", fillOpacity: 0.8, stroke: "#FFFFFF", strokeWidth: 0.5, outline: "none", cursor: "pointer" },
+                            pressed: { fill: "#E42", outline: "none" }
+                          }}
+                        />
+                      );
+                    })
+                  }
+                </Geographies>
+              </g>
+            ))}
           </ZoomableGroup>
         </ComposableMap>
         {tooltipContent && (
