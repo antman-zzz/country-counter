@@ -12,6 +12,8 @@ const {
 
 const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
+type MapRegion = "asia" | "europe" | "americas" | null;
+
 interface WorldMapProps {
   visitedCountries: Set<string>;
   onCountryClick: (countryCode: string) => void;
