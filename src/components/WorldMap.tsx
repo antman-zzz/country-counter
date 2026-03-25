@@ -45,7 +45,7 @@ const WorldMap: React.FC<WorldMapProps> = ({
   const worldWidth = scale * 2 * Math.PI;
 
   const getRegionConfig = (mobile: boolean) => {
-    return { center: [0, 20] as [number, number], zoom: mobile ? 0.6 : 0.35 };
+    return { center: [0, 10] as [number, number], zoom: mobile ? 1.0 : 0.6 };
   };
 
   const { center, zoom } = useMemo(() => getRegionConfig(isMobile), [isMobile]);
