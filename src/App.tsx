@@ -13,6 +13,15 @@ type MapRegion = "asia" | "europe" | "americas" | null;
 function App() {
   const currentYearString = String(new Date().getFullYear());
 
+  const [isReadOnly, setIsReadOnly] = useState(false);
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get("m") === "view") {
+      setIsReadOnly(true);
+    }
+  }, []);
+
   const [visitedData, setVisitedData] = useState<VisitedData>(() => {
     try {
       const urlParams = new URLSearchParams(window.location.search);
@@ -187,11 +196,15 @@ function App() {
     });
     const binary = String.fromCharCode(...bytes);
     const base64 = btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-    return `${window.location.origin}${window.location.pathname}?v=${base64}`;
+    const baseUrl = `${window.location.origin}${window.location.pathname}`;
+    return {
+      view: `${baseUrl}?v=${base64}&m=view`,
+      migrate: `${baseUrl}?v=${base64}`
+    };
   }, [visitedData]);
 
-  const handleCopyLink = () => {
-    navigator.clipboard.writeText(shareUrl).then(() => {
+  const handleCopyLink = (url: string) => {
+    navigator.clipboard.writeText(url).then(() => {
       setCopyCount(prev => prev + 1);
       setCopyFeedback(true);
       setTimeout(() => setCopyFeedback(false), 2000);
@@ -202,8 +215,15 @@ function App() {
   const totalCount = countries.length;
 
   return (
-    <div className="app-container">
-      {!homeCountry && (
+    <div className={`app-container ${isReadOnly ? 'mode-readonly' : ''}`}>
+      {isReadOnly && (
+        <div className="readonly-banner">
+          <span>Viewing shared journey. Changes will not be saved.</span>
+          <button className="btn-exit-readonly" onClick={() => window.location.href = window.location.origin + window.location.pathname}>Create My Own</button>
+        </div>
+      )}
+
+      {!homeCountry && !isReadOnly && (
         <div className="onboarding-overlay">
           <div className="onboarding-modal">
             <div className="onboarding-header">
@@ -229,15 +249,35 @@ function App() {
 
       {showQR && (
         <div className="modal-overlay" onClick={() => setShowQR(false)}>
-          <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-card share-modal-card" onClick={(e) => e.stopPropagation()}>
             <button className="modal-close-btn" onClick={() => setShowQR(false)}>✕</button>
             <h3>Share Your Journey</h3>
-            <p className="modal-subtitle">Sync with other devices or use for model changes.</p>
-            <div className="qr-wrapper"><QRCodeSVG value={shareUrl} size={180} /></div>
-            <div className="share-actions">
-              <button className={`btn-primary btn-copy-link ${copyFeedback ? 'copied' : ''}`} onClick={handleCopyLink}>
-                {copyFeedback ? "✓ Link Copied" : "Copy Share Link"}
-              </button>
+            <p className="modal-subtitle">Generate links to share or migrate your data.</p>
+            <div className="qr-wrapper"><QRCodeSVG value={shareUrl.view} size={180} /></div>
+            
+            <div className="share-section">
+              <div className="share-option">
+                <div className="share-option-info">
+                  <h4>Public Share Link</h4>
+                  <p>View-only mode for friends and social media.</p>
+                </div>
+                <button className={`btn-primary btn-copy-link ${copyFeedback ? 'copied' : ''}`} onClick={() => handleCopyLink(shareUrl.view)}>
+                  {copyFeedback ? "✓ Copied" : "Copy Link"}
+                </button>
+              </div>
+
+              <div className="share-option migration">
+                <div className="share-option-info">
+                  <h4>Data Migration Link</h4>
+                  <p>Full access to edit. Use this for your other devices.</p>
+                </div>
+                <button className="btn-secondary btn-copy-link" onClick={() => handleCopyLink(shareUrl.migrate)}>
+                  Copy Link
+                </button>
+              </div>
+            </div>
+
+            <div className="share-actions-footer">
               <div className="share-meta">Shared <span className="highlight">{copyCount}</span> times</div>
             </div>
           </div>
@@ -267,7 +307,7 @@ function App() {
         <section className="section-map">
           <WorldMap 
             visitedCountries={new Set(Object.keys(visitedData))} 
-            onCountryClick={handleToggleCountry} 
+            onCountryClick={isReadOnly ? () => {} : handleToggleCountry} 
             visitedColor={visitedColor}
             visitedData={visitedData}
             viewMode={viewMode}
@@ -275,6 +315,7 @@ function App() {
             onModeChange={(mode) => setViewMode(mode)}
             yearlyColors={yearlyColors}
             homeCountry={homeCountry}
+            readOnly={isReadOnly}
           />
         </section>
 
@@ -290,6 +331,7 @@ function App() {
             yearlyColors={yearlyColors} 
             onYearlyColorChange={handleUpdateYearlyColor} 
             homeCountry={homeCountry}
+            readOnly={isReadOnly}
           />
         </section>
       </main>

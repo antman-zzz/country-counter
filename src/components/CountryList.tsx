@@ -24,8 +24,9 @@ const SortableCountryCard: FC<{
   code2: string;
   onRemove: () => void;
   isDragging?: boolean;
-}> = ({ country, code2, onRemove, isDragging }) => {
-  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: country.numeric });
+  readOnly?: boolean;
+}> = ({ country, code2, onRemove, isDragging, readOnly }) => {
+  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: country.numeric, disabled: readOnly });
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
@@ -33,12 +34,12 @@ const SortableCountryCard: FC<{
     touchAction: 'none' // Essential for mobile DND
   };
   return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners} className={`timeline-country-card-mini ${isDragging ? 'dragging' : ''}`}>
+    <div ref={setNodeRef} style={style} {...attributes} {...listeners} className={`timeline-country-card-mini ${isDragging ? 'dragging' : ''} ${readOnly ? 'readonly' : ''}`}>
       <div className="card-content-mini">
         <img src={`https://flagcdn.com/w20/${code2.toLowerCase()}.png`} alt="" className="country-flag-mini" />
         <span className="country-name-mini">{country.name}</span>
       </div>
-      <button className="btn-remove-card-mini" onClick={(e) => { e.stopPropagation(); onRemove(); }}>✕</button>
+      {!readOnly && <button className="btn-remove-card-mini" onClick={(e) => { e.stopPropagation(); onRemove(); }}>✕</button>}
     </div>
   );
 };
@@ -54,10 +55,11 @@ interface CountryListProps {
   yearlyColors: Record<string, string>;
   onYearlyColorChange: (year: string, color: string) => void;
   homeCountry: string | null;
+  readOnly?: boolean;
 }
 
 const CountryList: FC<CountryListProps> = ({ 
-  countries, visitedCountries, visitedData, visitedOrder, onToggle, onYearsChange, onReorder, yearlyColors, onYearlyColorChange, homeCountry
+  countries, visitedCountries, visitedData, visitedOrder, onToggle, onYearsChange, onReorder, yearlyColors, onYearlyColorChange, homeCountry, readOnly
 }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [listMode, setListMode] = useState<"region" | "year" | "data">("region");
@@ -304,7 +306,10 @@ const CountryList: FC<CountryListProps> = ({
                     const isHome = country.numeric === homeCountry;
                     const years = visitedData[country.numeric] || [];
                     return (
-                      <div key={country.code} className={`country-selection-card ${isVisited ? 'visited' : ''} ${isHome ? 'is-home' : ''}`} onClick={() => isVisited ? setEditingCountry(country) : onToggle(country.code)}>
+                      <div key={country.code} className={`country-selection-card ${isVisited ? 'visited' : ''} ${isHome ? 'is-home' : ''} ${readOnly ? 'readonly' : ''}`} onClick={() => {
+                        if (readOnly) return;
+                        isVisited ? setEditingCountry(country) : onToggle(country.code);
+                      }}>
                         <div className="selection-card-content">
                           <div className="selection-card-header">
                             <img src={`https://flagcdn.com/w40/${country.code2.toLowerCase()}.png`} alt="" className="country-flag" />
@@ -340,14 +345,16 @@ const CountryList: FC<CountryListProps> = ({
                   <div className="timeline-year-label-group">
                     <div className="timeline-year-label" style={{ color: getYearLabelColor(year) }}><span>{year}</span></div>
                     <div className="year-stats-badge">{countriesByYear[year]?.length || 0} {countriesByYear[year]?.length === 1 ? 'country' : 'countries'}</div>
-                    <div className="year-color-picker-wrapper">
-                      <input type="color" value={getYearLabelColor(year)} onChange={(e) => onYearlyColorChange(year, e.target.value)} className="year-color-picker" />
-                    </div>
+                    {!readOnly && (
+                      <div className="year-color-picker-wrapper">
+                        <input type="color" value={getYearLabelColor(year)} onChange={(e) => onYearlyColorChange(year, e.target.value)} className="year-color-picker" />
+                      </div>
+                    )}
                   </div>
                   <div className="timeline-countries">
                     <SortableContext items={countriesByYear[year]?.map(c => c.numeric) || []} strategy={rectSortingStrategy}>
                       {countriesByYear[year]?.filter(c => c.name.toLowerCase().includes(searchTerm.toLowerCase())).map(country => (
-                        <SortableCountryCard key={`${year}-${country.code}`} country={country} code2={country.code2} onRemove={() => handleRemoveSpecificYear(country.numeric, year)} />
+                        <SortableCountryCard key={`${year}-${country.code}`} country={country} code2={country.code2} onRemove={() => handleRemoveSpecificYear(country.numeric, year)} readOnly={readOnly} />
                       ))}
                     </SortableContext>
                   </div>

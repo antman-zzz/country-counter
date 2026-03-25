@@ -22,10 +22,11 @@ interface WorldMapProps {
   onModeChange: (mode: "simple" | "yearly") => void;
   yearlyColors: Record<string, string>;
   homeCountry: string | null;
+  readOnly?: boolean;
 }
 
 const WorldMap: React.FC<WorldMapProps> = ({ 
-  visitedCountries, onCountryClick, visitedColor, visitedData, viewMode, onColorChange, onModeChange, yearlyColors, homeCountry
+  visitedCountries, onCountryClick, visitedColor, visitedData, viewMode, onColorChange, onModeChange, yearlyColors, homeCountry, readOnly
 }) => {
   const [tooltipContent, setTooltipContent] = useState("");
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
@@ -92,13 +93,20 @@ const WorldMap: React.FC<WorldMapProps> = ({
                         <Geography
                           key={`${offset}-${geo.rsmKey}`}
                           geography={geo}
-                          onClick={() => onCountryClick(countryId)}
+                          onClick={() => !readOnly && onCountryClick(countryId)}
                           onMouseEnter={() => setTooltipContent(`${geo.properties.name}${year ? ` (${year})` : ""}`)}
                           onMouseLeave={() => setTooltipContent("")}
                           style={{
                             default: { fill: fillColor, stroke: "#FFFFFF", strokeWidth: 0.5, outline: "none" },
-                            hover: { fill: isVisited ? fillColor : "#F53", fillOpacity: 0.8, stroke: "#FFFFFF", strokeWidth: 0.5, outline: "none", cursor: "pointer" },
-                            pressed: { fill: "#E42", outline: "none" }
+                            hover: { 
+                              fill: isVisited ? fillColor : (readOnly ? fillColor : "#F53"), 
+                              fillOpacity: 0.8, 
+                              stroke: "#FFFFFF", 
+                              strokeWidth: 0.5, 
+                              outline: "none", 
+                              cursor: readOnly ? "default" : "pointer" 
+                            },
+                            pressed: { fill: readOnly ? fillColor : "#E42", outline: "none" }
                           }}
                         />
                       );
@@ -124,25 +132,27 @@ const WorldMap: React.FC<WorldMapProps> = ({
         )}
       </div>
 
-      <div className="map-controls-compact">
-        <div className="compact-control-group">
-          <div className="compact-item mode-toggle">
-            <span className="compact-label">Mode:</span>
-            <div className="segmented-control-mini">
-              <button className={`btn-slim-mini ${viewMode === 'simple' ? 'active' : ''}`} onClick={() => onModeChange("simple")}>Simple</button>
-              <button className={`btn-slim-mini ${viewMode === 'yearly' ? 'active' : ''}`} onClick={() => onModeChange("yearly")}>Year</button>
-            </div>
-          </div>
-
-          {viewMode === "simple" && (
-            <div className="compact-item color-item">
-              <div className="color-picker-dot-mini">
-                <input type="color" value={visitedColor} onChange={(e) => onColorChange(e.target.value)} />
+      {!readOnly && (
+        <div className="map-controls-compact">
+          <div className="compact-control-group">
+            <div className="compact-item mode-toggle">
+              <span className="compact-label">Mode:</span>
+              <div className="segmented-control-mini">
+                <button className={`btn-slim-mini ${viewMode === 'simple' ? 'active' : ''}`} onClick={() => onModeChange("simple")}>Simple</button>
+                <button className={`btn-slim-mini ${viewMode === 'yearly' ? 'active' : ''}`} onClick={() => onModeChange("yearly")}>Year</button>
               </div>
             </div>
-          )}
+
+            {viewMode === "simple" && (
+              <div className="compact-item color-item">
+                <div className="color-picker-dot-mini">
+                  <input type="color" value={visitedColor} onChange={(e) => onColorChange(e.target.value)} />
+                </div>
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };
