@@ -53,7 +53,7 @@ const WorldMap: React.FC<WorldMapProps> = ({
       case "asia": return { center: [100, 20] as [number, number], zoom: mobile ? 2.5 : 2.0 };
       case "europe": return { center: [15, 30] as [number, number], zoom: mobile ? 2.8 : 2.2 };
       case "americas": return { center: [-90, 20] as [number, number], zoom: mobile ? 2.2 : 1.8 };
-      default: return { center: [20, 10] as [number, number], zoom: mobile ? 1.8 : 1.2 };
+      default: return { center: [0, 20] as [number, number], zoom: mobile ? 1.2 : 1.0 };
     }
   };
 
