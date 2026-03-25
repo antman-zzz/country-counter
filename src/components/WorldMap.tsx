@@ -45,7 +45,7 @@ const WorldMap: React.FC<WorldMapProps> = ({
   const worldWidth = scale * 2 * Math.PI;
 
   const getRegionConfig = (mobile: boolean) => {
-    return { center: [0, 10] as [number, number], zoom: mobile ? 1.0 : 0.6 };
+    return { center: [0, 10] as [number, number], zoom: mobile ? 1.4 : 0.9 };
   };
 
   const { center, zoom } = useMemo(() => getRegionConfig(isMobile), [isMobile]);
@@ -59,7 +59,7 @@ const WorldMap: React.FC<WorldMapProps> = ({
         <ComposableMap 
           projection="geoMercator" 
           projectionConfig={{ scale: scale }} 
-          height={isMobile ? 600 : 350} 
+          height={isMobile ? 450 : 350} 
           style={{ width: "100%", height: "auto" }}
         >
           <ZoomableGroup 
