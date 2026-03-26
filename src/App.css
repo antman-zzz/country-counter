@@ -30,6 +30,48 @@
 }
 .btn-exit-readonly:hover { opacity: 0.9; transform: scale(1.05); }
 
+/* --- Fullscreen Mode --- */
+.mode-fullscreen body { overflow: hidden; padding: 0; }
+.mode-fullscreen .app-container { padding: 0; height: 100vh; background: #f0f8ff; }
+.mode-fullscreen .main-content { padding: 0; margin: 0; max-width: none; }
+.mode-fullscreen .section-map { padding: 0; margin: 0; max-width: none; height: 100vh; }
+.mode-fullscreen .map-container { border-radius: 0; border: none; height: 100vh; box-shadow: none; }
+
+.btn-fullscreen-toggle {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border);
+  padding: 10px 16px;
+  border-radius: 100px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--secondary);
+  cursor: pointer;
+  z-index: 100;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-fullscreen-toggle:hover {
+  background: white;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+}
+
+.mode-fullscreen .btn-fullscreen-toggle {
+  bottom: 30px;
+  right: 30px;
+  background: var(--secondary);
+  color: white;
+  border: none;
+}
+
 .country-selection-card.readonly { cursor: default !important; }
 .country-selection-card.readonly:hover { transform: none !important; box-shadow: var(--shadow-sm) !important; }
 

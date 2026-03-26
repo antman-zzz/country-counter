@@ -23,10 +23,12 @@ interface WorldMapProps {
   yearlyColors: Record<string, string>;
   homeCountry: string | null;
   readOnly?: boolean;
+  isFullScreen?: boolean;
+  onToggleFullScreen?: () => void;
 }
 
 const WorldMap: React.FC<WorldMapProps> = ({ 
-  visitedCountries, onCountryClick, visitedColor, visitedData, viewMode, onColorChange, onModeChange, yearlyColors, homeCountry, readOnly
+  visitedCountries, onCountryClick, visitedColor, visitedData, viewMode, onColorChange, onModeChange, yearlyColors, homeCountry, readOnly, isFullScreen, onToggleFullScreen
 }) => {
   const [tooltipContent, setTooltipContent] = useState("");
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
@@ -55,13 +57,13 @@ const WorldMap: React.FC<WorldMapProps> = ({
   const getYearlyColor = (year: string) => yearlyColors[year] || defaultYearlyColors[parseInt(year) % 10];
 
   return (
-    <div className="map-component-root">
+    <div className={`map-component-root ${isFullScreen ? 'is-fullscreen' : ''}`}>
       <div className="map-container" onMouseMove={handleMouseMove} style={{ position: "relative", backgroundColor: "#f0f8ff", overflow: "hidden" }}>
         <ComposableMap 
           projection="geoMercator" 
           projectionConfig={{ scale: scale }} 
-          height={isMobile ? 450 : 350} 
-          style={{ width: "100%", height: "auto" }}
+          height={isFullScreen ? (isMobile ? 800 : 600) : (isMobile ? 450 : 350)} 
+          style={{ width: "100%", height: isFullScreen ? "100vh" : "auto" }}
         >
           <ZoomableGroup 
             key={isMobile ? "mobile" : "desktop"} 
@@ -130,9 +132,19 @@ const WorldMap: React.FC<WorldMapProps> = ({
             {tooltipContent}
           </div>
         )}
+
+        {onToggleFullScreen && (
+          <button 
+            className="btn-fullscreen-toggle" 
+            onClick={onToggleFullScreen}
+            title={isFullScreen ? "Exit Fullscreen" : "Fullscreen Mode"}
+          >
+            {isFullScreen ? "✕ Close" : "📷 Screenshot Mode"}
+          </button>
+        )}
       </div>
 
-      {!readOnly && (
+      {!readOnly && !isFullScreen && (
         <div className="map-controls-compact">
           <div className="compact-control-group">
             <div className="compact-item mode-toggle">

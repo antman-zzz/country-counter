@@ -14,6 +14,7 @@ function App() {
   const currentYearString = String(new Date().getFullYear());
 
   const [isReadOnly, setIsReadOnly] = useState(false);
+  const [isFullScreen, setIsFullScreen] = useState(false);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -215,7 +216,7 @@ function App() {
   const totalCount = countries.length;
 
   return (
-    <div className={`app-container ${isReadOnly ? 'mode-readonly' : ''}`}>
+    <div className={`app-container ${isReadOnly ? 'mode-readonly' : ''} ${isFullScreen ? 'mode-fullscreen' : ''}`}>
       {isReadOnly && (
         <div className="readonly-banner">
           <span>Viewing shared journey. Changes will not be saved.</span>
@@ -284,24 +285,26 @@ function App() {
         </div>
       )}
 
-      <header className="app-navbar">
-        <div className="nav-content">
-          <div className="nav-left"><h1 className="nav-title">CountryCounter</h1></div>
-          <div className="nav-center">
-            <ProgressBar 
-              visitedCount={visitedCount} 
-              totalCount={totalCount} 
-              color={visitedColor} 
-              isYearly={viewMode === "yearly"}
-              stats={visitedStats}
-              yearlyColors={yearlyColors}
-            />
+      {!isFullScreen && (
+        <header className="app-navbar">
+          <div className="nav-content">
+            <div className="nav-left"><h1 className="nav-title">CountryCounter</h1></div>
+            <div className="nav-center">
+              <ProgressBar 
+                visitedCount={visitedCount} 
+                totalCount={totalCount} 
+                color={visitedColor} 
+                isYearly={viewMode === "yearly"}
+                stats={visitedStats}
+                yearlyColors={yearlyColors}
+              />
+            </div>
+            <div className="nav-right">
+              <button className="btn-glass" onClick={() => setShowQR(true)}><span>Share Journey</span></button>
+            </div>
           </div>
-          <div className="nav-right">
-            <button className="btn-glass" onClick={() => setShowQR(true)}><span>Share Journey</span></button>
-          </div>
-        </div>
-      </header>
+        </header>
+      )}
 
       <main className="main-content">
         <section className="section-map">
@@ -316,38 +319,44 @@ function App() {
             yearlyColors={yearlyColors}
             homeCountry={homeCountry}
             readOnly={isReadOnly}
+            isFullScreen={isFullScreen}
+            onToggleFullScreen={() => setIsFullScreen(!isFullScreen)}
           />
         </section>
 
-        <section className="section-list">
-          <CountryList 
-            countries={countries} 
-            visitedCountries={visitedAlpha3Codes} 
-            visitedData={visitedData} 
-            visitedOrder={visitedOrder} 
-            onToggle={handleListToggle} 
-            onYearsChange={handleUpdateYears} 
-            onReorder={handleReorder} 
-            yearlyColors={yearlyColors} 
-            onYearlyColorChange={handleUpdateYearlyColor} 
-            homeCountry={homeCountry}
-            readOnly={isReadOnly}
-          />
-        </section>
+        {!isFullScreen && (
+          <section className="section-list">
+            <CountryList 
+              countries={countries} 
+              visitedCountries={visitedAlpha3Codes} 
+              visitedData={visitedData} 
+              visitedOrder={visitedOrder} 
+              onToggle={handleListToggle} 
+              onYearsChange={handleUpdateYears} 
+              onReorder={handleReorder} 
+              yearlyColors={yearlyColors} 
+              onYearlyColorChange={handleUpdateYearlyColor} 
+              homeCountry={homeCountry}
+              readOnly={isReadOnly}
+            />
+          </section>
+        )}
       </main>
 
-      <div className="mobile-progress-floating">
-        <ProgressBar 
-          visitedCount={visitedCount} 
-          totalCount={totalCount} 
-          color={visitedColor} 
-          isYearly={viewMode === "yearly"}
-          stats={visitedStats}
-          yearlyColors={yearlyColors}
-        />
-      </div>
+      {!isFullScreen && (
+        <div className="mobile-progress-floating">
+          <ProgressBar 
+            visitedCount={visitedCount} 
+            totalCount={totalCount} 
+            color={visitedColor} 
+            isYearly={viewMode === "yearly"}
+            stats={visitedStats}
+            yearlyColors={yearlyColors}
+          />
+        </div>
+      )}
 
-      <footer className="app-footer"><p>© 2026 Country Counter • Crafted for travelers</p></footer>
+      {!isFullScreen && <footer className="app-footer"><p>© 2026 Country Counter • Crafted for travelers</p></footer>}
     </div>
   );
 }
