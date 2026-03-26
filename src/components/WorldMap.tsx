@@ -35,6 +35,7 @@ const WorldMap: React.FC<WorldMapProps> = ({
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [orientation, setOrientation] = useState<"portrait" | "landscape">("portrait");
   const [showControls, setShowControls] = useState(true);
+  const [hasSelectedOrientation, setHasSelectedOrientation] = useState(false);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -42,12 +43,13 @@ const WorldMap: React.FC<WorldMapProps> = ({
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  // Fade out controls in fullscreen mode
   useEffect(() => {
-    if (isFullScreen && showControls) {
+    if (isFullScreen && showControls && hasSelectedOrientation) {
       const timer = setTimeout(() => setShowControls(false), 10000);
       return () => clearTimeout(timer);
     }
-  }, [isFullScreen, showControls]);
+  }, [isFullScreen, showControls, hasSelectedOrientation]);
 
   const handleMouseMove = (e: React.MouseEvent) => {
     setTooltipPosition({ x: e.clientX, y: e.clientY });
@@ -70,8 +72,33 @@ const WorldMap: React.FC<WorldMapProps> = ({
     return orientation === "portrait" ? 800 : 400;
   }, [isFullScreen, isMobile, orientation]);
 
+  const handleSelectOrientation = (orient: "portrait" | "landscape") => {
+    setOrientation(orient);
+    setHasSelectedOrientation(true);
+    setShowControls(true);
+  };
+
   return (
     <div className={`map-component-root ${isFullScreen ? 'is-fullscreen' : ''} ${isFullScreen ? orientation : ''}`} onClick={() => isFullScreen && setShowControls(true)}>
+      {isFullScreen && !hasSelectedOrientation && (
+        <div className="orientation-picker-overlay">
+          <div className="orientation-picker-card">
+            <h3>Choose Map Orientation</h3>
+            <p>Select how you want to capture your world map.</p>
+            <div className="orientation-options">
+              <button className="btn-orient-choice" onClick={() => handleSelectOrientation("portrait")}>
+                <span className="orient-icon">📱</span>
+                Vertical (Portrait)
+              </button>
+              <button className="btn-orient-choice" onClick={() => handleSelectOrientation("landscape")}>
+                <span className="orient-icon">🖥️</span>
+                Horizontal (Landscape)
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="map-container" onMouseMove={handleMouseMove} style={{ position: "relative", backgroundColor: "#f0f8ff", overflow: "hidden" }}>
         <ComposableMap 
           projection="geoMercator" 
@@ -159,7 +186,7 @@ const WorldMap: React.FC<WorldMapProps> = ({
             </a>
           )}
           
-          {isFullScreen && (
+          {isFullScreen && hasSelectedOrientation && (
             <div className="fullscreen-controls">
               <div className="orientation-toggle-group">
                 <button className={`btn-orient ${orientation === 'portrait' ? 'active' : ''}`} onClick={(e) => { e.stopPropagation(); setOrientation('portrait'); }}>Vertical</button>
@@ -178,7 +205,7 @@ const WorldMap: React.FC<WorldMapProps> = ({
       </div>
 
       {!readOnly && !isFullScreen && (
-        <div className="map-controls-compact">
+...        <div className="map-controls-compact">
           <div className="compact-control-group">
             <div className="compact-item mode-toggle">
               <span className="compact-label">Mode:</span>
