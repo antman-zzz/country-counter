@@ -205,7 +205,7 @@ const WorldMap: React.FC<WorldMapProps> = ({
       </div>
 
       {!readOnly && !isFullScreen && (
-...        <div className="map-controls-compact">
+        <div className="map-controls-compact">
           <div className="compact-control-group">
             <div className="compact-item mode-toggle">
               <span className="compact-label">Mode:</span>
