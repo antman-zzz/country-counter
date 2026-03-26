@@ -321,7 +321,6 @@ function App() {
             homeCountry={homeCountry}
             readOnly={isReadOnly}
             isFullScreen={isFullScreen}
-            onToggleFullScreen={() => setIsFullScreen(!isFullScreen)}
             screenshotUrl={shareUrl.screenshot}
           />
         </section>

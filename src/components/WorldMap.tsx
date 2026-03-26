@@ -24,12 +24,11 @@ interface WorldMapProps {
   homeCountry: string | null;
   readOnly?: boolean;
   isFullScreen?: boolean;
-  onToggleFullScreen?: () => void;
   screenshotUrl?: string;
 }
 
 const WorldMap: React.FC<WorldMapProps> = ({ 
-  visitedCountries, onCountryClick, visitedColor, visitedData, viewMode, onColorChange, onModeChange, yearlyColors, homeCountry, readOnly, isFullScreen, onToggleFullScreen, screenshotUrl
+  visitedCountries, onCountryClick, visitedColor, visitedData, viewMode, onColorChange, onModeChange, yearlyColors, homeCountry, readOnly, isFullScreen, screenshotUrl
 }) => {
   const [tooltipContent, setTooltipContent] = useState("");
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
