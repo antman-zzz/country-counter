@@ -133,7 +133,31 @@ body { margin: 0; font-family: "Inter", -apple-system, BlinkMacSystemFont, "Sego
 }
 .nav-content { display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 1200px; margin: 0 auto; }
 .nav-title { font-size: 1.25rem; font-weight: 800; color: var(--secondary); margin: 0; }
-.nav-center { flex: 1; max-width: 480px; margin: 0 40px; }
+.nav-center { flex: 1; max-width: 480px; margin: 0 40px; display: flex; align-items: center; }
+
+.progress-container { width: 100%; display: flex; flex-direction: column; gap: 6px; }
+.progress-text {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 0.65rem; font-weight: 800; color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: 0.05em;
+}
+.progress-bar-background {
+  height: 8px; background: rgba(0, 0, 0, 0.05); border-radius: 100px;
+  overflow: hidden; width: 100%; position: relative;
+}
+.progress-bar-fill {
+  height: 100%; border-radius: 100px;
+  transition: width 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.btn-glass {
+  background: var(--secondary); color: white; border: none;
+  padding: 10px 20px; border-radius: 100px; font-size: 0.85rem;
+  font-weight: 700; cursor: pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex; align-items: center; gap: 8px;
+}
+.btn-glass:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); background: #34495e; }
+.btn-glass:active { transform: translateY(0); }
 
 .section-map { padding: 32px 20px; max-width: 1140px; margin: 0 auto; }
 .map-container { background: #f0f8ff; border-radius: 24px; overflow: hidden; box-shadow: var(--shadow-md); border: 1px solid var(--border); }
