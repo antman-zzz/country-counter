@@ -25,10 +25,11 @@ interface WorldMapProps {
   readOnly?: boolean;
   isFullScreen?: boolean;
   onToggleFullScreen?: () => void;
+  screenshotUrl?: string;
 }
 
 const WorldMap: React.FC<WorldMapProps> = ({ 
-  visitedCountries, onCountryClick, visitedColor, visitedData, viewMode, onColorChange, onModeChange, yearlyColors, homeCountry, readOnly, isFullScreen, onToggleFullScreen
+  visitedCountries, onCountryClick, visitedColor, visitedData, viewMode, onColorChange, onModeChange, yearlyColors, homeCountry, readOnly, isFullScreen, onToggleFullScreen, screenshotUrl
 }) => {
   const [tooltipContent, setTooltipContent] = useState("");
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
@@ -133,15 +134,28 @@ const WorldMap: React.FC<WorldMapProps> = ({
           </div>
         )}
 
-        {onToggleFullScreen && (
-          <button 
-            className="btn-fullscreen-toggle" 
-            onClick={onToggleFullScreen}
-            title={isFullScreen ? "Exit Fullscreen" : "Fullscreen Mode"}
-          >
-            {isFullScreen ? "✕ Close" : "📷 Screenshot Mode"}
-          </button>
-        )}
+        <div className="map-overlay-actions">
+          {screenshotUrl && !isFullScreen && (
+            <a 
+              href={screenshotUrl} 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="btn-fullscreen-toggle no-decoration"
+            >
+              📷 Screenshot Mode
+            </a>
+          )}
+          
+          {isFullScreen && (
+            <button 
+              className="btn-fullscreen-toggle close-tab-btn" 
+              onClick={() => window.close()}
+              title="Close this tab"
+            >
+              ✕ Close Tab
+            </button>
+          )}
+        </div>
       </div>
 
       {!readOnly && !isFullScreen && (

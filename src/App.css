@@ -58,6 +58,8 @@
   gap: 8px;
 }
 
+.no-decoration { text-decoration: none; }
+
 .btn-fullscreen-toggle:hover {
   background: white;
   transform: translateY(-2px);
@@ -67,9 +69,14 @@
 .mode-fullscreen .btn-fullscreen-toggle {
   bottom: 30px;
   right: 30px;
-  background: var(--secondary);
+  background: var(--accent);
   color: white;
   border: none;
+}
+
+.close-tab-btn {
+  background: var(--accent) !important;
+  color: white !important;
 }
 
 .country-selection-card.readonly { cursor: default !important; }

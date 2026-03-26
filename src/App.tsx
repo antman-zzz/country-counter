@@ -18,9 +18,9 @@ function App() {
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get("m") === "view") {
-      setIsReadOnly(true);
-    }
+    const mode = urlParams.get("m");
+    if (mode === "view") setIsReadOnly(true);
+    if (mode === "ss") setIsFullScreen(true);
   }, []);
 
   const [visitedData, setVisitedData] = useState<VisitedData>(() => {
@@ -200,7 +200,8 @@ function App() {
     const baseUrl = `${window.location.origin}${window.location.pathname}`;
     return {
       view: `${baseUrl}?v=${base64}&m=view`,
-      migrate: `${baseUrl}?v=${base64}`
+      migrate: `${baseUrl}?v=${base64}`,
+      screenshot: `${baseUrl}?v=${base64}&m=ss`
     };
   }, [visitedData]);
 
@@ -321,6 +322,7 @@ function App() {
             readOnly={isReadOnly}
             isFullScreen={isFullScreen}
             onToggleFullScreen={() => setIsFullScreen(!isFullScreen)}
+            screenshotUrl={shareUrl.screenshot}
           />
         </section>
 
