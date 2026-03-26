@@ -33,12 +33,21 @@ const WorldMap: React.FC<WorldMapProps> = ({
   const [tooltipContent, setTooltipContent] = useState("");
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [orientation, setOrientation] = useState<"portrait" | "landscape">("portrait");
+  const [showControls, setShowControls] = useState(true);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+  useEffect(() => {
+    if (isFullScreen && showControls) {
+      const timer = setTimeout(() => setShowControls(false), 10000);
+      return () => clearTimeout(timer);
+    }
+  }, [isFullScreen, showControls]);
 
   const handleMouseMove = (e: React.MouseEvent) => {
     setTooltipPosition({ x: e.clientX, y: e.clientY });
@@ -56,17 +65,22 @@ const WorldMap: React.FC<WorldMapProps> = ({
   const defaultYearlyColors = ["#e74c3c", "#3498db", "#9b59b6", "#f1c40f", "#1abc9c", "#e67e22", "#34495e", "#d35400", "#27ae60", "#ff69b4"];
   const getYearlyColor = (year: string) => yearlyColors[year] || defaultYearlyColors[parseInt(year) % 10];
 
+  const mapHeight = useMemo(() => {
+    if (!isFullScreen) return isMobile ? 450 : 350;
+    return orientation === "portrait" ? 800 : 400;
+  }, [isFullScreen, isMobile, orientation]);
+
   return (
-    <div className={`map-component-root ${isFullScreen ? 'is-fullscreen' : ''}`}>
+    <div className={`map-component-root ${isFullScreen ? 'is-fullscreen' : ''} ${isFullScreen ? orientation : ''}`} onClick={() => isFullScreen && setShowControls(true)}>
       <div className="map-container" onMouseMove={handleMouseMove} style={{ position: "relative", backgroundColor: "#f0f8ff", overflow: "hidden" }}>
         <ComposableMap 
           projection="geoMercator" 
           projectionConfig={{ scale: scale }} 
-          height={isFullScreen ? (isMobile ? 800 : 600) : (isMobile ? 450 : 350)} 
-          style={{ width: "100%", height: isFullScreen ? "100vh" : "auto" }}
+          height={mapHeight} 
+          style={{ width: "100%", height: isFullScreen ? (orientation === "portrait" ? "auto" : "100vh") : "auto" }}
         >
           <ZoomableGroup 
-            key={isMobile ? "mobile" : "desktop"} 
+            key={`${isMobile}-${orientation}`} 
             center={center} 
             zoom={zoom}
             maxZoom={12} 
@@ -133,7 +147,7 @@ const WorldMap: React.FC<WorldMapProps> = ({
           </div>
         )}
 
-        <div className="map-overlay-actions">
+        <div className={`map-overlay-actions ${isFullScreen && !showControls ? 'fade-hide' : ''}`}>
           {screenshotUrl && !isFullScreen && (
             <a 
               href={screenshotUrl} 
@@ -146,13 +160,19 @@ const WorldMap: React.FC<WorldMapProps> = ({
           )}
           
           {isFullScreen && (
-            <button 
-              className="btn-fullscreen-toggle close-tab-btn" 
-              onClick={() => window.close()}
-              title="Close this tab"
-            >
-              ✕ Close Tab
-            </button>
+            <div className="fullscreen-controls">
+              <div className="orientation-toggle-group">
+                <button className={`btn-orient ${orientation === 'portrait' ? 'active' : ''}`} onClick={(e) => { e.stopPropagation(); setOrientation('portrait'); }}>Vertical</button>
+                <button className={`btn-orient ${orientation === 'landscape' ? 'active' : ''}`} onClick={(e) => { e.stopPropagation(); setOrientation('landscape'); }}>Horizontal</button>
+              </div>
+              <button 
+                className="btn-fullscreen-toggle close-tab-btn" 
+                onClick={(e) => { e.stopPropagation(); window.close(); }}
+                title="Close this tab"
+              >
+                ✕ Close Tab
+              </button>
+            </div>
           )}
         </div>
       </div>

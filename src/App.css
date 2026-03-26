@@ -37,6 +37,57 @@
 .mode-fullscreen .section-map { padding: 0; margin: 0; max-width: none; height: 100vh; }
 .mode-fullscreen .map-container { border-radius: 0; border: none; height: 100vh; box-shadow: none; }
 
+/* --- Fullscreen Orientation --- */
+.is-fullscreen.portrait .map-container { height: auto; min-height: 100vh; }
+.is-fullscreen.landscape .map-container { height: 100vh; overflow: hidden; }
+
+.fullscreen-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  position: absolute;
+  bottom: 30px;
+  right: 30px;
+  align-items: flex-end;
+}
+
+.orientation-toggle-group {
+  display: flex;
+  background: rgba(44, 62, 80, 0.8);
+  backdrop-filter: blur(10px);
+  padding: 4px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+.btn-orient {
+  background: transparent;
+  border: none;
+  color: rgba(255,255,255,0.6);
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-orient.active {
+  background: white;
+  color: var(--secondary);
+}
+
+/* Fade out logic */
+.fade-hide {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 10s ease-in;
+}
+
+.map-overlay-actions {
+  transition: opacity 0.3s ease;
+}
+
 .btn-fullscreen-toggle {
   position: absolute;
   bottom: 20px;
@@ -67,8 +118,8 @@
 }
 
 .mode-fullscreen .btn-fullscreen-toggle {
-  bottom: 30px;
-  right: 30px;
+  /* Position is handled by .fullscreen-controls */
+  position: static;
   background: var(--accent);
   color: white;
   border: none;
