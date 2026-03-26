@@ -58,18 +58,21 @@ const WorldMap: React.FC<WorldMapProps> = ({
   const scale = 100;
   const worldWidth = scale * 2 * Math.PI;
 
-  const getRegionConfig = (mobile: boolean) => {
+  const getRegionConfig = (mobile: boolean, isFS: boolean, orient: string) => {
+    if (isFS && orient === "portrait") {
+      return { center: [0, 23] as [number, number], zoom: mobile ? 1.8 : 1.2 };
+    }
     return { center: [0, 23] as [number, number], zoom: mobile ? 1.5 : 0.9 };
   };
 
-  const { center, zoom } = useMemo(() => getRegionConfig(isMobile), [isMobile]);
+  const { center, zoom } = useMemo(() => getRegionConfig(isMobile, !!isFullScreen, orientation), [isMobile, isFullScreen, orientation]);
 
   const defaultYearlyColors = ["#e74c3c", "#3498db", "#9b59b6", "#f1c40f", "#1abc9c", "#e67e22", "#34495e", "#d35400", "#27ae60", "#ff69b4"];
   const getYearlyColor = (year: string) => yearlyColors[year] || defaultYearlyColors[parseInt(year) % 10];
 
   const mapHeight = useMemo(() => {
     if (!isFullScreen) return isMobile ? 450 : 350;
-    return orientation === "portrait" ? 800 : 400;
+    return orientation === "portrait" ? 1000 : 450;
   }, [isFullScreen, isMobile, orientation]);
 
   const handleSelectOrientation = (orient: "portrait" | "landscape") => {
