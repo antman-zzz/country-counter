@@ -9,12 +9,31 @@ import { QRCodeSVG } from "qrcode.react";
 type VisitedData = Record<string, string[]>; // Changed to string[] for multiple visits
 type YearlyColors = Record<string, string>;
 type MapRegion = "asia" | "europe" | "americas" | null;
+type ViewMode = "simple" | "yearly" | "planning";
 
 function App() {
   const currentYearString = String(new Date().getFullYear());
 
   const [isReadOnly, setIsReadOnly] = useState(false);
   const [isFullScreen, setIsFullScreen] = useState(false);
+
+  const [plannedCountries, setPlannedCountries] = useState<Set<string>>(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const p = urlParams.get("p");
+    if (p) {
+      try {
+        const binaryString = atob(p.replace(/-/g, "+").replace(/_/g, "/"));
+        const ids: string[] = [];
+        for (let i = 0; i < binaryString.length; i++) {
+          const idx = binaryString.charCodeAt(i);
+          if (countries[idx]) ids.push(countries[idx].numeric);
+        }
+        return new Set(ids);
+      } catch (e) { return new Set(); }
+    }
+    const saved = localStorage.getItem("plannedCountries");
+    return saved ? new Set(JSON.parse(saved)) : new Set();
+  });
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -89,7 +108,7 @@ function App() {
     return saved ? JSON.parse(saved) : {};
   });
   
-  const [viewMode, setViewMode] = useState<"simple" | "yearly">("simple");
+  const [viewMode, setViewMode] = useState<ViewMode>("simple");
   const [showQR, setShowQR] = useState(false);
   const [copyCount, setCopyCount] = useState<number>(() => {
     return parseInt(localStorage.getItem("copyCount") || "0");
@@ -124,6 +143,10 @@ function App() {
     localStorage.setItem("copyCount", copyCount.toString());
   }, [copyCount]);
 
+  useEffect(() => {
+    localStorage.setItem("plannedCountries", JSON.stringify(Array.from(plannedCountries)));
+  }, [plannedCountries]);
+
   const handleSelectHome = (numericId: string) => {
     const country = countries.find(c => c.numeric === numericId);
     if (!country) return;
@@ -133,10 +156,22 @@ function App() {
     else if (country.region.includes("Europe") || country.region.includes("Africa")) setMapRegion("europe");
     else setMapRegion("americas");
   };
+const handleToggleCountry = (id: string) => {
+  if (viewMode === "planning") {
+    if (!visitedData[id]) {
+      setPlannedCountries(prev => {
+        const next = new Set(prev);
+        if (next.has(id)) next.delete(id);
+        else next.add(id);
+        return next;
+      });
+    }
+    return;
+  }
 
-  const handleToggleCountry = (id: string) => {
-    setVisitedData((prev) => {
-      const next = { ...prev };
+  setVisitedData((prev) => {
+    const next = { ...prev };
+...
       if (next[id]) {
         delete next[id];
         setVisitedOrder(order => order.filter(oid => oid !== id));
@@ -186,24 +221,34 @@ function App() {
   }, [visitedData]);
 
   const shareUrl = useMemo(() => {
-    const bytes: number[] = [];
+    const visitedBytes: number[] = [];
     Object.entries(visitedData).forEach(([id, years]) => {
       const idx = countries.findIndex(c => c.numeric === id);
       if (idx !== -1) {
-        bytes.push(idx);
-        bytes.push(years.length);
-        years.forEach(y => bytes.push(parseInt(y.slice(-2))));
+        visitedBytes.push(idx);
+        visitedBytes.push(years.length);
+        years.forEach(y => visitedBytes.push(parseInt(y.slice(-2))));
       }
     });
-    const binary = String.fromCharCode(...bytes);
-    const base64 = btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+    
+    const plannedBytes: number[] = [];
+    plannedCountries.forEach(id => {
+      const idx = countries.findIndex(c => c.numeric === id);
+      if (idx !== -1) plannedBytes.push(idx);
+    });
+
+    const vBase64 = btoa(String.fromCharCode(...visitedBytes)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+    const pBase64 = btoa(String.fromCharCode(...plannedBytes)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+    
     const baseUrl = `${window.location.origin}${window.location.pathname}`;
+    const params = `v=${vBase64}${pBase64 ? `&p=${pBase64}` : ''}`;
+    
     return {
-      view: `${baseUrl}?v=${base64}&m=view`,
-      migrate: `${baseUrl}?v=${base64}`,
-      screenshot: `${baseUrl}?v=${base64}&m=ss`
+      view: `${baseUrl}?${params}&m=view`,
+      migrate: `${baseUrl}?${params}`,
+      screenshot: `${baseUrl}?${params}&m=ss`
     };
-  }, [visitedData]);
+  }, [visitedData, plannedCountries]);
 
   const handleCopyLink = (url: string) => {
     navigator.clipboard.writeText(url).then(() => {

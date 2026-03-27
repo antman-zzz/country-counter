@@ -56,10 +56,12 @@ interface CountryListProps {
   onYearlyColorChange: (year: string, color: string) => void;
   homeCountry: string | null;
   readOnly?: boolean;
+  plannedCountries?: Set<string>;
+  viewMode?: string;
 }
 
 const CountryList: FC<CountryListProps> = ({ 
-  countries, visitedCountries, visitedData, visitedOrder, onToggle, onYearsChange, onReorder, yearlyColors, onYearlyColorChange, homeCountry, readOnly
+  countries, visitedCountries, visitedData, visitedOrder, onToggle, onYearsChange, onReorder, yearlyColors, onYearlyColorChange, homeCountry, readOnly, plannedCountries = new Set(), viewMode
 }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [listMode, setListMode] = useState<"region" | "year" | "data">("region");
@@ -284,7 +286,10 @@ const CountryList: FC<CountryListProps> = ({
             const countriesInRegion = filteredCountries.filter(c => c.region === region);
             const totalInRegion = countries.filter(c => c.region === region);
             const visitedInRegion = totalInRegion.filter(c => visitedCountries.has(c.code));
-            const percentage = totalInRegion.length > 0 ? Math.round((visitedInRegion.length / totalInRegion.length) * 100) : 0;
+            const plannedInRegion = totalInRegion.filter(c => plannedCountries.has(c.numeric) && !visitedCountries.has(c.code));
+            
+            const visitedPercentage = totalInRegion.length > 0 ? Math.round((visitedInRegion.length / totalInRegion.length) * 100) : 0;
+            const plannedPercentage = totalInRegion.length > 0 ? Math.round((plannedInRegion.length / totalInRegion.length) * 100) : 0;
             
             if (countriesInRegion.length === 0) return null;
             return (
@@ -293,38 +298,57 @@ const CountryList: FC<CountryListProps> = ({
                   <h3 className="region-title">{region}</h3>
                   <div className="region-progress-wrapper">
                     <div className="region-progress-bar">
-                      <div className="region-progress-fill" style={{ width: `${percentage}%` }} />
+                      <div className="region-progress-fill" style={{ width: `${visitedPercentage}%` }} />
+                      {viewMode === "planning" && (
+                        <div className="region-progress-fill planned" style={{ width: `${plannedPercentage}%`, left: `${visitedPercentage}%` }} />
+                      )}
                     </div>
                     <span className="region-stats-text">
-                      {visitedInRegion.length}/{totalInRegion.length} <span className="region-percentage">({percentage}%)</span>
+                      {visitedInRegion.length}{viewMode === "planning" && plannedInRegion.length > 0 ? ` (+${plannedInRegion.length})` : ""}/{totalInRegion.length}
                     </span>
                   </div>
                 </div>
                 <div className="country-grid">
                   {countriesInRegion.map(country => {
                     const isVisited = visitedCountries.has(country.code);
+                    const isPlanned = plannedCountries.has(country.numeric);
                     const isHome = country.numeric === homeCountry;
                     const years = visitedData[country.numeric] || [];
+                    const isPlanningMode = viewMode === "planning";
+
                     return (
-                      <div key={country.code} className={`country-selection-card ${isVisited ? 'visited' : ''} ${isHome ? 'is-home' : ''} ${readOnly ? 'readonly' : ''}`} onClick={() => {
-                        if (readOnly) return;
-                        isVisited ? setEditingCountry(country) : onToggle(country.code);
-                      }}>
+                      <div 
+                        key={country.code} 
+                        className={`country-selection-card ${isVisited ? 'visited' : ''} ${isPlanned && !isVisited ? 'planned' : ''} ${isHome ? 'is-home' : ''} ${readOnly || (isPlanningMode && isVisited) ? 'readonly' : ''}`} 
+                        onClick={() => {
+                          if (readOnly) return;
+                          if (isPlanningMode) {
+                            if (isVisited) return; // Disable editing in planning mode
+                            onToggle(country.numeric);
+                          } else {
+                            isVisited ? setEditingCountry(country) : onToggle(country.code);
+                          }
+                        }}
+                      >
                         <div className="selection-card-content">
                           <div className="selection-card-header">
                             <img src={`https://flagcdn.com/w40/${country.code2.toLowerCase()}.png`} alt="" className="country-flag" />
                             <span className="country-name">{country.name}</span>
                           </div>
-                          {isVisited && (
+                          {(isVisited || (isPlanningMode && isPlanned)) && (
                             <div className="selection-card-footer">
-                              <div className="visit-badge">{years.length} {years.length === 1 ? 'visit' : 'visits'}</div>
-                              <div className="year-preview">
-                                {(() => {
-                                  const sorted = [...years].sort((a, b) => a.localeCompare(b));
-                                  if (sorted.length <= 3) return sorted.join(", ");
-                                  return `${sorted[0]}, ..., ${sorted[sorted.length - 1]}`;
-                                })()}
+                              <div className={`visit-badge ${!isVisited && isPlanned ? 'planned' : ''}`}>
+                                {isVisited ? `${years.length} ${years.length === 1 ? 'visit' : 'visits'}` : "PLANNED"}
                               </div>
+                              {isVisited && (
+                                <div className="year-preview">
+                                  {(() => {
+                                    const sorted = [...years].sort((a, b) => a.localeCompare(b));
+                                    if (sorted.length <= 3) return sorted.join(", ");
+                                    return `${sorted[0]}, ..., ${sorted[sorted.length - 1]}`;
+                                  })()}
+                                </div>
+                              )}
                             </div>
                           )}
                         </div>
