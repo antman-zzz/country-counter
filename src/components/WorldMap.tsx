@@ -17,9 +17,9 @@ interface WorldMapProps {
   onCountryClick: (countryCode: string) => void;
   visitedColor: string;
   visitedData: Record<string, string[]>;
-  viewMode: "simple" | "yearly" | "planning";
+  viewMode: "simple" | "year" | "plan";
   onColorChange: (color: string) => void;
-  onModeChange: (mode: "simple" | "yearly" | "planning") => void;
+  onModeChange: (mode: "simple" | "year" | "plan") => void;
   yearlyColors: Record<string, string>;
   homeCountry: string | null;
   readOnly?: boolean;
@@ -133,10 +133,10 @@ const WorldMap: React.FC<WorldMapProps> = ({
                       const year = years && years.length > 0 ? [...years].sort((a, b) => a.localeCompare(b))[0] : null;
 
                       let fillColor = isVisited ? visitedColor : "#D6D6DA";
-                      if (isVisited && viewMode === "yearly" && year) fillColor = getYearlyColor(year);
+                      if (isVisited && viewMode === "year" && year) fillColor = getYearlyColor(year);
                       if (isHome) fillColor = "#f1c40f"; // Gold for home country
                       
-                      // Planning mode highlight
+                      // Plan mode highlight
                       const isPlanned = plannedCountries.has(countryId);
                       if (!isVisited && !isHome && isPlanned) fillColor = "#ff9f43"; // Orange for planned
 
@@ -146,23 +146,24 @@ const WorldMap: React.FC<WorldMapProps> = ({
                           geography={geo}
                           onClick={() => {
                             if (readOnly) return;
-                            // In planning mode, only allow clicks on non-visited countries
-                            if (viewMode === "planning" && isVisited) return;
+                            // In plan mode, only allow clicks on non-visited countries
+                            if (viewMode === "plan" && isVisited) return;
                             onCountryClick(countryId);
                           }}
+
                           onMouseEnter={() => setTooltipContent(`${geo.properties.name}${year ? ` (${year})` : ""}${isPlanned ? " (Planned)" : ""}`)}
                           onMouseLeave={() => setTooltipContent("")}
                           style={{
                             default: { fill: fillColor, stroke: "#FFFFFF", strokeWidth: 0.5, outline: "none" },
                             hover: { 
-                              fill: isVisited ? fillColor : (readOnly ? fillColor : (viewMode === "planning" && isVisited ? fillColor : "#F53")), 
+                              fill: isVisited ? fillColor : (readOnly ? fillColor : (viewMode === "plan" && isVisited ? fillColor : "#F53")), 
                               fillOpacity: 0.8, 
                               stroke: "#FFFFFF", 
                               strokeWidth: 0.5, 
                               outline: "none", 
-                              cursor: readOnly || (viewMode === "planning" && isVisited) ? "default" : "pointer" 
+                              cursor: readOnly || (viewMode === "plan" && isVisited) ? "default" : "pointer" 
                             },
-                            pressed: { fill: readOnly || (viewMode === "planning" && isVisited) ? fillColor : "#E42", outline: "none" }
+                            pressed: { fill: readOnly || (viewMode === "plan" && isVisited) ? fillColor : "#E42", outline: "none" }
                           }}
                         />
                       );
@@ -223,9 +224,9 @@ const WorldMap: React.FC<WorldMapProps> = ({
             <div className="compact-item mode-toggle">
               <span className="compact-label">Mode:</span>
               <div className="segmented-control-mini">
-                <button className={`btn-slim-mini ${viewMode === 'simple' ? 'active' : ''}`} onClick={() => onModeChange("simple")}>Simple</button>
-                <button className={`btn-slim-mini ${viewMode === 'yearly' ? 'active' : ''}`} onClick={() => onModeChange("yearly")}>Year</button>
-                <button className={`btn-slim-mini ${viewMode === 'planning' ? 'active' : ''}`} onClick={() => onModeChange("planning")}>Planning</button>
+                <button className={`btn-slim-mini ${viewMode === 'simple' ? 'active' : ''}`} onClick={() => onModeChange("simple")}>simple</button>
+                <button className={`btn-slim-mini ${viewMode === 'year' ? 'active' : ''}`} onClick={() => onModeChange("year")}>year</button>
+                <button className={`btn-slim-mini ${viewMode === 'plan' ? 'active' : ''}`} onClick={() => onModeChange("plan")}>plan</button>
               </div>
             </div>
 

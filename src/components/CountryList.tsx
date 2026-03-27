@@ -49,7 +49,7 @@ interface CountryListProps {
   visitedCountries: Set<string>;
   visitedData: Record<string, string[]>;
   visitedOrder: string[];
-  onToggle: (countryCode: string) => void;
+  onToggle: (numericId: string) => void;
   onYearsChange: (numericId: string, years: string[]) => void;
   onReorder: (newOrder: string[]) => void;
   yearlyColors: Record<string, string>;
@@ -57,7 +57,7 @@ interface CountryListProps {
   homeCountry: string | null;
   readOnly?: boolean;
   plannedCountries?: Set<string>;
-  viewMode?: string;
+  viewMode?: "simple" | "year" | "plan";
 }
 
 const CountryList: FC<CountryListProps> = ({ 
@@ -168,7 +168,7 @@ const CountryList: FC<CountryListProps> = ({
   const handleRemoveYear = (numericId: string, index: number) => {
     const currentYears = visitedData[numericId] || [];
     const nextYears = currentYears.filter((_, i) => i !== index);
-    if (nextYears.length === 0) onToggle(getCountryByNumeric(numericId)?.code || "");
+    if (nextYears.length === 0) onToggle(numericId);
     else onYearsChange(numericId, nextYears);
   };
 
@@ -299,12 +299,12 @@ const CountryList: FC<CountryListProps> = ({
                   <div className="region-progress-wrapper">
                     <div className="region-progress-bar">
                       <div className="region-progress-fill" style={{ width: `${visitedPercentage}%` }} />
-                      {viewMode === "planning" && (
+                      {viewMode === "plan" && (
                         <div className="region-progress-fill planned" style={{ width: `${plannedPercentage}%`, left: `${visitedPercentage}%` }} />
                       )}
                     </div>
                     <span className="region-stats-text">
-                      {visitedInRegion.length}{viewMode === "planning" && plannedInRegion.length > 0 ? ` (+${plannedInRegion.length})` : ""}/{totalInRegion.length}
+                      {visitedInRegion.length}{viewMode === "plan" && plannedInRegion.length > 0 ? ` (+${plannedInRegion.length})` : ""}/{totalInRegion.length}
                     </span>
                   </div>
                 </div>
@@ -314,19 +314,19 @@ const CountryList: FC<CountryListProps> = ({
                     const isPlanned = plannedCountries.has(country.numeric);
                     const isHome = country.numeric === homeCountry;
                     const years = visitedData[country.numeric] || [];
-                    const isPlanningMode = viewMode === "planning";
+                    const isPlanMode = viewMode === "plan";
 
                     return (
                       <div 
                         key={country.code} 
-                        className={`country-selection-card ${isVisited ? 'visited' : ''} ${isPlanned && !isVisited ? 'planned' : ''} ${isHome ? 'is-home' : ''} ${readOnly || (isPlanningMode && isVisited) ? 'readonly' : ''}`} 
+                        className={`country-selection-card ${isVisited ? 'visited' : ''} ${isPlanned && !isVisited ? 'planned' : ''} ${isHome ? 'is-home' : ''} ${readOnly || (isPlanMode && isVisited) ? 'readonly' : ''}`} 
                         onClick={() => {
                           if (readOnly) return;
-                          if (isPlanningMode) {
-                            if (isVisited) return; // Disable editing in planning mode
+                          if (isPlanMode) {
+                            if (isVisited) return; // Disable editing in plan mode
                             onToggle(country.numeric);
                           } else {
-                            isVisited ? setEditingCountry(country) : onToggle(country.code);
+                            isVisited ? setEditingCountry(country) : onToggle(country.numeric);
                           }
                         }}
                       >
@@ -335,7 +335,7 @@ const CountryList: FC<CountryListProps> = ({
                             <img src={`https://flagcdn.com/w40/${country.code2.toLowerCase()}.png`} alt="" className="country-flag" />
                             <span className="country-name">{country.name}</span>
                           </div>
-                          {(isVisited || (isPlanningMode && isPlanned)) && (
+                          {(isVisited || (isPlanMode && isPlanned)) && (
                             <div className="selection-card-footer">
                               <div className={`visit-badge ${!isVisited && isPlanned ? 'planned' : ''}`}>
                                 {isVisited ? `${years.length} ${years.length === 1 ? 'visit' : 'visits'}` : "PLANNED"}
@@ -482,7 +482,7 @@ const CountryList: FC<CountryListProps> = ({
                           <div 
                             key={country.code} 
                             className={`unvisited-chip ${readOnly ? 'readonly' : ''}`} 
-                            onClick={() => !readOnly && onToggle(country.code)}
+                            onClick={() => !readOnly && onToggle(country.numeric)}
                           >
                             <img src={`https://flagcdn.com/w20/${country.code2.toLowerCase()}.png`} alt="" className="mini-flag" />
                             <span>{country.name}</span>

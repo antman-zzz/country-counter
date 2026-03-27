@@ -9,7 +9,7 @@ import { QRCodeSVG } from "qrcode.react";
 type VisitedData = Record<string, string[]>; // Changed to string[] for multiple visits
 type YearlyColors = Record<string, string>;
 type MapRegion = "asia" | "europe" | "americas" | null;
-type ViewMode = "simple" | "yearly" | "planning";
+type ViewMode = "simple" | "year" | "plan";
 
 function App() {
   const currentYearString = String(new Date().getFullYear());
@@ -156,22 +156,21 @@ function App() {
     else if (country.region.includes("Europe") || country.region.includes("Africa")) setMapRegion("europe");
     else setMapRegion("americas");
   };
-const handleToggleCountry = (id: string) => {
-  if (viewMode === "planning") {
-    if (!visitedData[id]) {
-      setPlannedCountries(prev => {
-        const next = new Set(prev);
-        if (next.has(id)) next.delete(id);
-        else next.add(id);
-        return next;
-      });
+  const handleToggleCountry = (id: string) => {
+    if (viewMode === "plan") {
+      if (!visitedData[id]) {
+        setPlannedCountries(prev => {
+          const next = new Set(prev);
+          if (next.has(id)) next.delete(id);
+          else next.add(id);
+          return next;
+        });
+      }
+      return;
     }
-    return;
-  }
 
-  setVisitedData((prev) => {
-    const next = { ...prev };
-...
+    setVisitedData((prev) => {
+      const next = { ...prev };
       if (next[id]) {
         delete next[id];
         setVisitedOrder(order => order.filter(oid => oid !== id));
@@ -195,9 +194,8 @@ const handleToggleCountry = (id: string) => {
     setVisitedOrder(newOrder);
   };
 
-  const handleListToggle = (alpha3: string) => {
-    const country = countries.find(c => c.code === alpha3);
-    if (country) handleToggleCountry(country.numeric);
+  const handleListToggle = (numericId: string) => {
+    handleToggleCountry(numericId);
   };
 
   const visitedAlpha3Codes = useMemo(() => {
@@ -340,7 +338,7 @@ const handleToggleCountry = (id: string) => {
                 visitedCount={visitedCount} 
                 totalCount={totalCount} 
                 color={visitedColor} 
-                isYearly={viewMode === "yearly"}
+                isYearly={viewMode === "year"}
                 stats={visitedStats}
                 yearlyColors={yearlyColors}
               />
@@ -367,6 +365,7 @@ const handleToggleCountry = (id: string) => {
             readOnly={isReadOnly}
             isFullScreen={isFullScreen}
             screenshotUrl={shareUrl.screenshot}
+            plannedCountries={plannedCountries}
           />
         </section>
 
@@ -384,6 +383,8 @@ const handleToggleCountry = (id: string) => {
               onYearlyColorChange={handleUpdateYearlyColor} 
               homeCountry={homeCountry}
               readOnly={isReadOnly}
+              plannedCountries={plannedCountries}
+              viewMode={viewMode}
             />
           </section>
         )}
@@ -395,7 +396,7 @@ const handleToggleCountry = (id: string) => {
             visitedCount={visitedCount} 
             totalCount={totalCount} 
             color={visitedColor} 
-            isYearly={viewMode === "yearly"}
+            isYearly={viewMode === "year"}
             stats={visitedStats}
             yearlyColors={yearlyColors}
           />
