@@ -7,12 +7,14 @@ interface ProgressBarProps {
   isYearly?: boolean;
   stats?: Record<string, number>;
   yearlyColors?: Record<string, string>;
+  plannedCount?: number;
 }
 
 const ProgressBar: FC<ProgressBarProps> = ({ 
-  visitedCount, totalCount, color, isYearly, stats, yearlyColors 
+  visitedCount, totalCount, color, isYearly, stats, yearlyColors, plannedCount = 0 
 }) => {
-  const percentage = totalCount > 0 ? (visitedCount / totalCount) * 100 : 0;
+  const visitedPercentage = totalCount > 0 ? (visitedCount / totalCount) * 100 : 0;
+  const plannedPercentage = totalCount > 0 ? (plannedCount / totalCount) * 100 : 0;
 
   const defaultYearlyColors = ["#e74c3c", "#3498db", "#9b59b6", "#f1c40f", "#1abc9c", "#e67e22", "#34495e", "#d35400", "#27ae60", "#ff69b4"];
   const getYearlyColor = (year: string) => yearlyColors?.[year] || defaultYearlyColors[parseInt(year) % 10];
@@ -30,31 +32,65 @@ const ProgressBar: FC<ProgressBarProps> = ({
     <div className="progress-container" style={{ width: "100%" }}>
       <div className="progress-text">
         <span>{isYearly ? "Timeline Progress" : "Visited Countries"}</span>
-        <span>{visitedCount} / {totalCount} ({percentage.toFixed(1)}%)</span>
+        <span>
+          {visitedCount}
+          {plannedCount > 0 && <span style={{ color: '#ff9f43', marginLeft: '4px' }}>(+{plannedCount})</span>}
+          {" / "}{totalCount} ({((visitedCount + plannedCount) / totalCount * 100).toFixed(1)}%)
+        </span>
       </div>
-      <div className="progress-bar-background">
+      <div className="progress-bar-background" style={{ position: 'relative', overflow: 'hidden' }}>
         {isYearly && segments.length > 0 ? (
-          segments.map((seg, idx) => (
+          <>
+            {segments.map((seg, idx) => (
+              <div 
+                key={seg.year}
+                className="progress-bar-fill"
+                style={{ 
+                  width: `${seg.width}%`, 
+                  backgroundColor: seg.color,
+                  position: 'relative',
+                  float: 'left',
+                  borderRadius: idx === 0 ? '4px 0 0 4px' : (idx === segments.length - 1 && visitedPercentage >= 99.9 ? '0 4px 4px 0' : '0')
+                }}
+              />
+            ))}
+            {plannedCount > 0 && (
+              <div 
+                className="progress-bar-fill planned" 
+                style={{ 
+                  width: `${plannedPercentage}%`,
+                  backgroundColor: '#ff9f43',
+                  position: 'relative',
+                  float: 'left',
+                  opacity: 0.7
+                }}
+              />
+            )}
+          </>
+        ) : (
+          <>
             <div 
-              key={seg.year}
-              className="progress-bar-fill"
+              className="progress-bar-fill" 
               style={{ 
-                width: `${seg.width}%`, 
-                backgroundColor: seg.color,
+                width: `${visitedPercentage}%`,
+                backgroundColor: color,
                 position: 'relative',
-                float: 'left',
-                borderRadius: idx === 0 ? '4px 0 0 4px' : (idx === segments.length - 1 && percentage >= 99.9 ? '0 4px 4px 0' : '0')
+                float: 'left'
               }}
             />
-          ))
-        ) : (
-          <div 
-            className="progress-bar-fill" 
-            style={{ 
-              width: `${percentage}%`,
-              backgroundColor: color 
-            }}
-          />
+            {plannedCount > 0 && (
+              <div 
+                className="progress-bar-fill planned" 
+                style={{ 
+                  width: `${plannedPercentage}%`,
+                  backgroundColor: '#ff9f43',
+                  position: 'relative',
+                  float: 'left',
+                  opacity: 0.7
+                }}
+              />
+            )}
+          </>
         )}
       </div>
     </div>

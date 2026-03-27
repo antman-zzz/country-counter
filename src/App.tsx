@@ -334,15 +334,15 @@ function App() {
           <div className="nav-content">
             <div className="nav-left"><h1 className="nav-title">CountryCounter</h1></div>
             <div className="nav-center">
-              <ProgressBar 
-                visitedCount={visitedCount} 
-                totalCount={totalCount} 
-                color={visitedColor} 
+              <ProgressBar
+                visitedCount={visitedCount}
+                totalCount={totalCount}
+                color={visitedColor}
                 isYearly={viewMode === "year"}
                 stats={visitedStats}
                 yearlyColors={yearlyColors}
-              />
-            </div>
+                plannedCount={plannedCountries.size}
+              />            </div>
             <div className="nav-right">
               <button className="btn-glass" onClick={() => setShowQR(true)}><span>Share Journey</span></button>
             </div>
@@ -392,15 +392,15 @@ function App() {
 
       {!isFullScreen && (
         <div className="mobile-progress-floating">
-          <ProgressBar 
-            visitedCount={visitedCount} 
-            totalCount={totalCount} 
-            color={visitedColor} 
+          <ProgressBar
+            visitedCount={visitedCount}
+            totalCount={totalCount}
+            color={visitedColor}
             isYearly={viewMode === "year"}
             stats={visitedStats}
             yearlyColors={yearlyColors}
-          />
-        </div>
+            plannedCount={plannedCountries.size}
+          />        </div>
       )}
 
       {!isFullScreen && <footer className="app-footer"><p>© 2026 Country Counter • Crafted for travelers</p></footer>}
