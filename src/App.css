@@ -123,19 +123,83 @@ body { margin: 0; font-family: "Inter", -apple-system, BlinkMacSystemFont, "Sego
   transition: opacity 10s ease-in !important;
 }
 
-.btn-fullscreen-toggle {
-  position: absolute; bottom: 20px; right: 20px;
-  background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(8px);
-  border: 1px solid var(--border); padding: 10px 16px; border-radius: 100px;
-  font-size: 0.85rem; font-weight: 700; color: var(--secondary);
-  cursor: pointer; z-index: 100; box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  transition: all 0.2s; display: flex; align-items: center; gap: 8px;
-}
-.no-decoration { text-decoration: none; }
-.btn-fullscreen-toggle:hover { background: white; transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,0.15); }
+/* --- Timeline View --- */
+.timeline-container { display: flex; flex-direction: column; gap: 48px; padding: 20px 0; }
+.timeline-year-block { display: flex; gap: 40px; align-items: flex-start; }
+.timeline-year-label-group { flex: 0 0 140px; position: sticky; top: 100px; display: flex; flex-direction: column; gap: 12px; align-items: flex-start; }
+.timeline-year-label { font-size: 3rem; font-weight: 900; line-height: 1; letter-spacing: -0.05em; margin: 0; position: relative; }
+.timeline-year-label::after { content: ''; position: absolute; bottom: -8px; left: 0; width: 40px; height: 4px; background: currentColor; border-radius: 2px; opacity: 0.3; }
+.year-stats-badge { font-size: 0.8rem; font-weight: 800; color: var(--text-muted); background: white; padding: 6px 14px; border-radius: 12px; border: 1px solid var(--border); box-shadow: var(--shadow-sm); }
+.year-color-picker-wrapper { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
+.year-color-picker { width: 28px; height: 28px; border: 2px solid white; border-radius: 50%; cursor: pointer; padding: 0; box-shadow: 0 0 0 1px #eee; }
 
-.mode-fullscreen .btn-fullscreen-toggle { position: static; background: var(--accent); color: white; border: none; }
-.close-tab-btn { background: var(--accent) !important; color: white !important; }
+.timeline-countries { flex: 1; display: flex; flex-wrap: wrap; gap: 16px; align-content: flex-start; }
+.timeline-country-card-mini {
+  background: white; border: 1px solid var(--border); border-radius: 16px;
+  padding: 10px 16px; display: flex; align-items: center; gap: 12px;
+  box-shadow: var(--shadow-sm); cursor: grab; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+.timeline-country-card-mini:hover { transform: translateY(-4px); box-shadow: 0 8px 16px rgba(0,0,0,0.08); border-color: var(--primary); }
+.timeline-country-card-mini:active { cursor: grabbing; transform: scale(0.98); }
+.timeline-country-card-mini.dragging { opacity: 0.5; cursor: grabbing; z-index: 1000; box-shadow: 0 20px 40px rgba(0,0,0,0.15); }
+.card-content-mini { display: flex; align-items: center; gap: 10px; }
+.country-flag-mini { width: 28px; height: auto; border-radius: 4px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
+.country-name-mini { font-size: 0.9rem; font-weight: 800; color: var(--secondary); white-space: nowrap; }
+.btn-remove-card-mini {
+  background: #ff7675; color: white; border: none; width: 22px; height: 22px;
+  border-radius: 50%; cursor: pointer; font-size: 0.7rem; display: flex;
+  align-items: center; justify-content: center; opacity: 0; transition: all 0.2s;
+  position: absolute; top: -11px; right: -11px; box-shadow: 0 2px 8px rgba(255,118,117,0.4);
+}
+.timeline-country-card-mini:hover .btn-remove-card-mini { opacity: 1; }
+
+/* --- Map Tooltip --- */
+.map-tooltip {
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(8px);
+  padding: 10px 16px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: var(--secondary);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+  border: 1px solid rgba(0,0,0,0.05);
+  z-index: 10000;
+  white-space: nowrap;
+  pointer-events: none;
+  animation: tooltipEnter 0.2s ease-out;
+}
+@keyframes tooltipEnter { from { opacity: 0; transform: translateY(4px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+
+/* --- Screenshot Mode Button --- */
+.btn-fullscreen-toggle {
+  position: absolute; bottom: 24px; right: 24px;
+  background: white; border: 1px solid var(--border);
+  padding: 12px 24px; border-radius: 100px;
+  font-size: 0.9rem; font-weight: 800; color: var(--secondary);
+  cursor: pointer; z-index: 100; box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  display: flex; align-items: center; gap: 10px;
+}
+.btn-fullscreen-toggle:hover { transform: translateY(-4px); box-shadow: 0 12px 28px rgba(0,0,0,0.15); border-color: var(--primary); color: var(--primary); }
+
+@media (max-width: 768px) {
+  .btn-fullscreen-toggle {
+    bottom: 16px; right: 16px;
+    width: 52px; height: 52px; padding: 0;
+    justify-content: center; font-size: 1.4rem;
+    border-radius: 16px; /* Squircle style FAB */
+    box-shadow: 0 12px 24px rgba(0,0,0,0.2);
+  }
+  .btn-fullscreen-toggle .btn-text { display: none; }
+  .btn-fullscreen-toggle .btn-icon { margin: 0; }
+  
+  .timeline-year-block { flex-direction: column; gap: 20px; }
+  .timeline-year-label-group { position: static; flex-direction: row; width: 100%; justify-content: flex-start; align-items: center; gap: 16px; }
+  .timeline-year-label { font-size: 2.2rem; }
+  .timeline-year-label::after { display: none; }
+}
 
 /* --- Layout --- */
 .app-navbar {

@@ -196,7 +196,8 @@ const WorldMap: React.FC<WorldMapProps> = ({
               rel="noopener noreferrer" 
               className="btn-fullscreen-toggle no-decoration"
             >
-              📷 Screenshot Mode
+              <span className="btn-icon">📷</span>
+              <span className="btn-text">Screenshot Mode</span>
             </a>
           )}
           
