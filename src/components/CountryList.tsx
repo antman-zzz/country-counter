@@ -9,7 +9,7 @@ import {
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
-import type { DragStartEvent, DragOverEvent, DragEndEvent } from "@dnd-kit/core";
+import type { DragOverEvent, DragEndEvent } from "@dnd-kit/core";
 import {
   arrayMove,
   SortableContext,
@@ -376,7 +376,7 @@ const CountryList: FC<CountryListProps> = ({
         )}
 
         {listMode === "year" && (
-          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={handleDragStart} onDragOver={handleDragOver} onDragEnd={handleDragEnd}>
+          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragOver={handleDragOver} onDragEnd={handleDragEnd}>
             <div className="timeline-container">
               {sortedYears.map(year => {
                 const countriesInYear = countriesByYear[year]?.filter(c => c.name.toLowerCase().includes(searchTerm.toLowerCase())) || [];
