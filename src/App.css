@@ -349,6 +349,9 @@ body { margin: 0; font-family: "Inter", -apple-system, BlinkMacSystemFont, "Sego
   .mobile-progress-floating { display: block; position: fixed; top: calc(var(--navbar-height) + 12px); left: 50%; transform: translateX(-50%); width: calc(100% - 32px); z-index: 1500; }
   .section-map { padding: 12px; margin-top: 80px; }
   .section-list { padding: 0 12px 20px; }
+  .list-toolbar { flex-direction: column; align-items: stretch; gap: 12px; }
+  .list-mode-toggle { width: 100%; }
+  .btn-list-mode { flex: 1; padding: 10px; font-size: 0.75rem; justify-content: center; }
   .country-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
   .stats-top-row, .stats-middle-row, .unvisited-grid { grid-template-columns: 1fr; }
   .orientation-options { grid-template-columns: 1fr; }

@@ -9,7 +9,7 @@ import { QRCodeSVG } from "qrcode.react";
 type VisitedData = Record<string, string[]>; // Changed to string[] for multiple visits
 type YearlyColors = Record<string, string>;
 type MapRegion = "asia" | "europe" | "americas" | null;
-type ViewMode = "simple" | "year" | "plan";
+type ViewMode = "basic" | "year" | "plan";
 
 function App() {
   const currentYearString = String(new Date().getFullYear());
@@ -108,7 +108,7 @@ function App() {
     return saved ? JSON.parse(saved) : {};
   });
   
-  const [viewMode, setViewMode] = useState<ViewMode>("simple");
+  const [viewMode, setViewMode] = useState<ViewMode>("basic");
   const [showQR, setShowQR] = useState(false);
   const [copyCount, setCopyCount] = useState<number>(() => {
     return parseInt(localStorage.getItem("copyCount") || "0");

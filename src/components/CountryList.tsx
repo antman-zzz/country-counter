@@ -20,13 +20,14 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 
 const SortableCountryCard: FC<{
+  id: string;
   country: Country;
   code2: string;
   onRemove: () => void;
   isDragging?: boolean;
   readOnly?: boolean;
-}> = ({ country, code2, onRemove, isDragging, readOnly }) => {
-  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: country.numeric, disabled: readOnly });
+}> = ({ id, country, code2, onRemove, isDragging, readOnly }) => {
+  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id, disabled: readOnly });
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
@@ -57,7 +58,7 @@ interface CountryListProps {
   homeCountry: string | null;
   readOnly?: boolean;
   plannedCountries?: Set<string>;
-  viewMode?: "simple" | "year" | "plan";
+  viewMode?: "basic" | "year" | "plan";
 }
 
 const CountryList: FC<CountryListProps> = ({ 
@@ -132,27 +133,40 @@ const CountryList: FC<CountryListProps> = ({
     return { regionalData: regionEntries, regionalTotal, totalCountries: uniqueVisited.length, totalVisits, mostVisitedYear, yearlyCounts };
   }, [visitedData, countries]);
 
-  const handleDragStart = (_event: DragStartEvent) => {};
   const handleDragOver = (event: DragOverEvent) => {
     const { active, over } = event;
     if (!over) return;
-    const aId = active.id as string;
-    const oId = over.id as string;
-    if (aId === oId) return;
-    const aYears = visitedData[aId];
-    let oYear = "";
-    if (oId.length > 3) oYear = oId;
-    else if (visitedData[oId]) oYear = visitedData[oId][0];
+    const aIdFull = active.id as string;
+    const oIdFull = over.id as string;
+    if (aIdFull === oIdFull) return;
 
+    // Extract numericId and year from unique IDs (format: year-numericId)
+    const aId = aIdFull.includes("-") ? aIdFull.split("-")[1] : aIdFull;
+    let oYear = "";
+    if (oIdFull.includes("-")) {
+      oYear = oIdFull.split("-")[0];
+    } else if (oIdFull.length > 3) {
+      oYear = oIdFull;
+    } else if (visitedData[oIdFull]) {
+      oYear = visitedData[oIdFull][0];
+    }
+
+    const aYears = visitedData[aId];
     if (aYears && oYear && !aYears.includes(oYear)) {
       onYearsChange(aId, [oYear, ...aYears.filter(y => y !== oYear)]);
     }
   };
+
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (over && active.id !== over.id) {
-      const oldIndex = visitedOrder.indexOf(active.id as string);
-      const newIndex = visitedOrder.indexOf(over.id as string);
+      const aIdFull = active.id as string;
+      const oIdFull = over.id as string;
+      const aId = aIdFull.includes("-") ? aIdFull.split("-")[1] : aIdFull;
+      const oId = oIdFull.includes("-") ? oIdFull.split("-")[1] : oIdFull;
+
+      const oldIndex = visitedOrder.indexOf(aId);
+      const newIndex = visitedOrder.indexOf(oId);
       if (oldIndex !== -1 && newIndex !== -1) onReorder(arrayMove(visitedOrder, oldIndex, newIndex));
     }
   };
@@ -364,26 +378,36 @@ const CountryList: FC<CountryListProps> = ({
         {listMode === "year" && (
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={handleDragStart} onDragOver={handleDragOver} onDragEnd={handleDragEnd}>
             <div className="timeline-container">
-              {sortedYears.map(year => (
-                <div key={year} className="timeline-year-block">
-                  <div className="timeline-year-label-group">
-                    <div className="timeline-year-label" style={{ color: getYearLabelColor(year) }}><span>{year}</span></div>
-                    <div className="year-stats-badge">{countriesByYear[year]?.length || 0} {countriesByYear[year]?.length === 1 ? 'country' : 'countries'}</div>
-                    {!readOnly && (
-                      <div className="year-color-picker-wrapper">
-                        <input type="color" value={getYearLabelColor(year)} onChange={(e) => onYearlyColorChange(year, e.target.value)} className="year-color-picker" />
-                      </div>
-                    )}
+              {sortedYears.map(year => {
+                const countriesInYear = countriesByYear[year]?.filter(c => c.name.toLowerCase().includes(searchTerm.toLowerCase())) || [];
+                return (
+                  <div key={year} className="timeline-year-block">
+                    <div className="timeline-year-label-group">
+                      <div className="timeline-year-label" style={{ color: getYearLabelColor(year) }}><span>{year}</span></div>
+                      <div className="year-stats-badge">{countriesInYear.length} {countriesInYear.length === 1 ? 'country' : 'countries'}</div>
+                      {!readOnly && (
+                        <div className="year-color-picker-wrapper">
+                          <input type="color" value={getYearLabelColor(year)} onChange={(e) => onYearlyColorChange(year, e.target.value)} className="year-color-picker" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="timeline-countries">
+                      <SortableContext items={countriesInYear.map(c => `${year}-${c.numeric}`)} strategy={rectSortingStrategy}>
+                        {countriesInYear.map(country => (
+                          <SortableCountryCard 
+                            key={`${year}-${country.code}`} 
+                            id={`${year}-${country.numeric}`}
+                            country={country} 
+                            code2={country.code2} 
+                            onRemove={() => handleRemoveSpecificYear(country.numeric, year)} 
+                            readOnly={readOnly} 
+                          />
+                        ))}
+                      </SortableContext>
+                    </div>
                   </div>
-                  <div className="timeline-countries">
-                    <SortableContext items={countriesByYear[year]?.map(c => c.numeric) || []} strategy={rectSortingStrategy}>
-                      {countriesByYear[year]?.filter(c => c.name.toLowerCase().includes(searchTerm.toLowerCase())).map(country => (
-                        <SortableCountryCard key={`${year}-${country.code}`} country={country} code2={country.code2} onRemove={() => handleRemoveSpecificYear(country.numeric, year)} readOnly={readOnly} />
-                      ))}
-                    </SortableContext>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </DndContext>
         )}

@@ -17,9 +17,9 @@ interface WorldMapProps {
   onCountryClick: (countryCode: string) => void;
   visitedColor: string;
   visitedData: Record<string, string[]>;
-  viewMode: "simple" | "year" | "plan";
+  viewMode: "basic" | "year" | "plan";
   onColorChange: (color: string) => void;
-  onModeChange: (mode: "simple" | "year" | "plan") => void;
+  onModeChange: (mode: "basic" | "year" | "plan") => void;
   yearlyColors: Record<string, string>;
   homeCountry: string | null;
   readOnly?: boolean;
@@ -224,13 +224,13 @@ const WorldMap: React.FC<WorldMapProps> = ({
             <div className="compact-item mode-toggle">
               <span className="compact-label">Mode:</span>
               <div className="segmented-control-mini">
-                <button className={`btn-slim-mini ${viewMode === 'simple' ? 'active' : ''}`} onClick={() => onModeChange("simple")}>simple</button>
+                <button className={`btn-slim-mini ${viewMode === 'basic' ? 'active' : ''}`} onClick={() => onModeChange("basic")}>basic</button>
                 <button className={`btn-slim-mini ${viewMode === 'year' ? 'active' : ''}`} onClick={() => onModeChange("year")}>year</button>
                 <button className={`btn-slim-mini ${viewMode === 'plan' ? 'active' : ''}`} onClick={() => onModeChange("plan")}>plan</button>
               </div>
             </div>
 
-            {viewMode === "simple" && (
+            {viewMode === "basic" && (
               <div className="compact-item color-item">
                 <div className="color-picker-dot-mini">
                   <input type="color" value={visitedColor} onChange={(e) => onColorChange(e.target.value)} />
